@@ -1,0 +1,39 @@
+[gpg]
+	format = ssh
+
+[gpg "ssh"]
+	program = /opt/1Password/op-ssh-sign
+
+[commit]
+	gpgsign = true
+
+[user]
+	name = jacocanete
+	email = jacogagarincanete@gmail.com
+	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF2L47F33A4BUqo+MAs8UJBwBzFZ/w+6YcBDrw81GS69
+
+[includeIf "gitdir:~/Local\\ Sites/"]
+	# Use alternate config file for work
+	path = ~/.config/git/digitalimpulse/config
+	# Will use default config file for personal
+
+[url "git@personalgit:jacocanete/"]
+	# git clone jc:gnaritas
+	insteadOf = "jc:"
+
+[url "git@workgit:digitalimpulse/"]
+	# git clone di:wp-theme-smpd
+	insteadOf = "di:"
+
+[url "git@personalgit:"]
+	# git clone personal:jacocanete/gnaritas
+	insteadOf = "personal:"
+
+[url "git@workgit:"]
+	# git clone work:digitalimpulse/wp-theme-smpd
+	insteadOf = "work:"
+
+[status]
+	branch = true
+	showStash = true
+	showUntrackedFiles = true
