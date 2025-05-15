@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Local
+Exec=env TMPDIR=/home/jacocanete/.local-tmp /opt/Local/local %U
+Terminal=false
+Type=Application
+Icon=local
+StartupWMClass=Local
+Comment=Create local WordPress sites with ease.
+MimeType=x-scheme-handler/flywheel-local;
+Categories=Development;
