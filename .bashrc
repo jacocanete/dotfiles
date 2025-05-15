@@ -32,3 +32,10 @@ if [ -d "$FNM_PATH" ]; then
 fi
 
 bind -x '"\C-f": "fzf"'
+
+# Enable Git branch display
+parse_git_branch() {
+  git branch 2>/dev/null | sed -n '/\* /s///p'
+}
+
+export PS1="\[\e[32m\]\u@\h\[\e[m\]:\[\e[34m\]\w\[\e[m\]\[\e[33m\] \$(parse_git_branch)\[\e[m\]\$ "
