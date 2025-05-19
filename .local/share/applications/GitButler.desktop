@@ -5,3 +5,4 @@ Icon=gitbutler-tauri
 Name=GitButler
 Terminal=false
 Type=Application
+StartupWMClass=gitbutler-tauri
