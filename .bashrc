@@ -28,7 +28,7 @@ unset rc
 FNM_PATH="/home/jacocanete/.local/share/fnm"
 if [ -d "$FNM_PATH" ]; then
   export PATH="$FNM_PATH:$PATH"
-  eval "`fnm env`"
+  eval "`fnm env --use-on-cd`"
 fi
 
 bind -x '"\C-f": "fzf"'
@@ -39,3 +39,8 @@ parse_git_branch() {
 }
 
 export PS1="\[\e[32m\]\u@\h\[\e[m\]:\[\e[34m\]\w\[\e[m\]\[\e[33m\] \$(parse_git_branch)\[\e[m\]\$ "
+
+eval "$(zoxide init --cmd cd bash)"
+
+alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'
+export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json:/usr/share/vulkan/icd.d/nvidia_icd.i686.json
