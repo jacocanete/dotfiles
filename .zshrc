@@ -130,9 +130,9 @@ export EDITOR=nvim
 
 eval "$(zellij setup --generate-auto-start zsh)"
 
-export LOCALSITES=~/Local\ Sites/
+export LOCALSITES=~/Local\ Sites
 
-export PROJECTS=~/Projects/
+export PROJECTS=~/Projects
 
 # Yazi shell wrapper
 function y() {
@@ -142,4 +142,7 @@ function y() {
 	[ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
 	rm -f -- "$tmp"
 }
+
 export PATH="$HOME/.cargo/bin:$PATH"
+
+export XDG_CONFIG_HOME="$HOME/.config"
