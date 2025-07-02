@@ -224,10 +224,17 @@ return {
 			-- - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
 			-- - settings (table): Override the default settings passed when initializing the server.
 			--       For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
-			local servers = require("lsp.servers")
+			local tools = require("config.tools")
 
-			-- Ensure the servers and tools above are installed
-			--
+			local tools_needed = {}
+			for _, formatters in pairs(tools.formatters) do
+				vim.list_extend(tools_needed, formatters)
+			end
+
+			for _, linters in pairs(tools.linters) do
+				vim.list_extend(tools_needed, linters)
+			end
+
 			-- To check the current status of installed tools and/or manually install
 			-- other tools, you can run
 			--   :Mason
@@ -239,20 +246,15 @@ return {
 			--
 			-- You can add other tools here that you want Mason to install
 			-- for you, so that they are available from within Neovim.
-			local ensure_installed = vim.tbl_keys(servers or {})
-			vim.list_extend(ensure_installed, {
-				"stylua", -- Used to format Lua code
-				"stylelint-lsp",
-				"phpcs",
-				"phpcbf",
-				"typescript-language-server",
-				"emmet-language-server",
-				"css-lsp",
-				"intelephense",
-				"prettier",
-				"jsonlint",
-				"markdownlint",
-			})
+
+			local ensure_installed = vim.tbl_keys(tools.servers or {})
+
+			vim.list_extend(ensure_installed, tools_needed)
+			vim.list_extend(ensure_installed, tools.additional_tools)
+
+			vim.print(ensure_installed)
+
+			-- Will deduplicate the list interally (probably)
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
 			-- Setup mason-lspconfig
@@ -263,7 +265,8 @@ return {
 			})
 
 			-- Setup LSP servers
-			for server, config in pairs(servers) do
+			-- Resets capabilities for each each server and adds from servers.lua
+			for server, config in pairs(tools.servers) do
 				config.capabilities = vim.tbl_deep_extend("force", {}, capabilities, config.capabilities or {})
 				require("lspconfig")[server].setup(config)
 			end
