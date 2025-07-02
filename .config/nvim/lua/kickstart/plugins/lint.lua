@@ -1,3 +1,5 @@
+local tools = require("config.tools")
+
 return {
 
 	{ -- Linting
@@ -5,15 +7,7 @@ return {
 		event = { "BufReadPre", "BufNewFile" },
 		config = function()
 			local lint = require("lint")
-			lint.linters_by_ft = {
-				markdown = { "markdownlint" },
-				javascript = { "eslint_d" },
-				typescript = { "eslint_d" },
-				javascriptreact = { "eslint_d" },
-				typescriptreact = { "eslint_d" },
-				php = { "phpcs" },
-				json = { "jsonlint" },
-			}
+			lint.linters_by_ft = tools.linters or {}
 
 			-- To allow other plugins to add linters to require('lint').linters_by_ft,
 			-- instead set linters_by_ft like this:
