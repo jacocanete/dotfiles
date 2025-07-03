@@ -9,7 +9,7 @@ return {
 			--  - va)  - [V]isually select [A]round [)]paren
 			--  - yinq - [Y]ank [I]nside [N]ext [Q]uote
 			--  - ci'  - [C]hange [I]nside [']quote
-			require("mini.ai").setup({ n_lines = 5000 })
+			require("mini.ai").setup { n_lines = 5000 }
 
 			-- Add/delete/replace surroundings (brackets, quotes, etc.)
 			--
@@ -21,9 +21,9 @@ return {
 			-- Simple and easy statusline.
 			-- You could remove this setup call if you don't like it,
 			-- and try some other statusline plugin
-			local statusline = require("mini.statusline")
+			local statusline = require "mini.statusline"
 			-- set use_icons to true if you have a Nerd Font
-			statusline.setup({ use_icons = vim.g.have_nerd_font })
+			statusline.setup { use_icons = vim.g.have_nerd_font }
 
 			-- You can configure sections in the statusline by overriding their
 			-- default behavior. For example, here we set the section for
@@ -37,5 +37,79 @@ return {
 			-- Check out: https://github.com/echasnovski/mini.nvim
 		end,
 	},
-}
 
+	-- Undo tree
+	{
+		"mbbill/undotree",
+		lazy = false, -- needs to be explicitly set, because of the keys property
+		keys = {
+			{
+				"<leader>tu",
+				vim.cmd.UndotreeToggle,
+				desc = "[T]oggle [u]ndotree",
+			},
+		},
+	},
+
+	-- Flash
+	{
+		"folke/flash.nvim",
+		event = "VeryLazy",
+		---@type Flash.Config
+		opts = {
+			modes = {
+				search = {
+					enabled = true,
+					highlight = {
+						backdrop = true,
+					},
+				},
+			},
+		},
+		keys = {
+			{
+				"zu",
+				mode = { "n", "x", "o" },
+				function()
+					require("flash").treesitter {
+						jump = { pos = "start" },
+						label = { before = true, after = false, style = "overlay" },
+					}
+				end,
+				desc = "[zu] Flash Treesitter start",
+			},
+			{
+				"zU",
+				mode = { "n", "x", "o" },
+				function()
+					require("flash").treesitter {
+						jump = { pos = "end" },
+						label = { before = true, after = false, style = "overlay" },
+					}
+				end,
+				desc = "[zU] Flash Treesitter end",
+			},
+			{
+				"r",
+				mode = "o",
+				function() end,
+				desc = "Disabled",
+			},
+			{
+				"R",
+				mode = { "o", "x" },
+				function() end,
+				desc = "Disabled",
+			},
+			-- Turns off flash search
+			{
+				"<c-s>",
+				mode = { "c" },
+				function()
+					require("flash").toggle()
+				end,
+				desc = "Toggle Flash Search",
+			},
+		},
+	},
+}
