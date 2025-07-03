@@ -21,16 +21,27 @@ return {
 				-- `friendly-snippets` contains a variety of premade snippets.
 				--    See the README about individual language/framework/plugin snippets:
 				--    https://github.com/rafamadriz/friendly-snippets
-				-- {
-				--   'rafamadriz/friendly-snippets',
-				--   config = function()
-				--     require('luasnip.loaders.from_vscode').lazy_load()
-				--   end,
-				-- },
+				{
+					"rafamadriz/friendly-snippets",
+					config = function()
+						require("luasnip.loaders.from_vscode").lazy_load()
+					end,
+				},
 			},
 			opts = {},
 		},
 		"folke/lazydev.nvim",
+		{
+			"supermaven-inc/supermaven-nvim",
+			opts = {
+				log_level = "off",
+				disable_inline_completion = true, -- disables inline completion for use with cmp
+				disable_keymaps = true, -- disables built in keymaps for more manual control
+			},
+		},
+		{
+			"huijiro/blink-cmp-supermaven",
+		},
 	},
 	--- @module 'blink.cmp'
 	--- @type blink.cmp.Config
@@ -76,9 +87,16 @@ return {
 		},
 
 		sources = {
-			default = { "lsp", "path", "snippets", "lazydev" },
+			default = { "lsp", "path", "supermaven", "snippets", "lazydev" },
 			providers = {
 				lazydev = { module = "lazydev.integrations.blink", score_offset = 100 },
+				supermaven = {
+					name = "supermaven",
+					module = "blink-cmp-supermaven",
+					async = true,
+					-- Make sure supermaven results show first
+					score_offset = 200,
+				},
 			},
 		},
 

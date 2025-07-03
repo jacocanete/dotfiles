@@ -252,8 +252,6 @@ return {
 			vim.list_extend(ensure_installed, tools_needed)
 			vim.list_extend(ensure_installed, tools.additional_tools)
 
-			vim.print(ensure_installed)
-
 			-- Will deduplicate the list interally (probably)
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
