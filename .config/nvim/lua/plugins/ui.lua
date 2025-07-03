@@ -85,4 +85,3 @@ return {
 		opts = { signs = false },
 	},
 }
-
