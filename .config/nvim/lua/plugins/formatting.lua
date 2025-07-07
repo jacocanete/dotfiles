@@ -24,12 +24,26 @@ return {
       local disable_filetypes = { c = true, cpp = true }
       if disable_filetypes[vim.bo[bufnr].filetype] then
         return nil
-      else
-        return {
-          timeout_ms = 1000,
-          lsp_format = "fallback",
-        }
       end
+
+      local filename = vim.api.nvim_buf_get_name(bufnr)
+      local is_deno_project = tools.is_deno_project(filename)
+
+      -- Use different formatters for Deno projects
+      if is_deno_project then
+        local ft = vim.bo[bufnr].filetype
+        if ft == "javascript" or ft == "typescript" or ft == "javascriptreact" or ft == "typescriptreact" then
+          return {
+            timeout_ms = 1000,
+            formatters = { "deno_fmt" },
+          }
+        end
+      end
+
+      return {
+        timeout_ms = 1000,
+        lsp_format = "fallback",
+      }
     end,
     formatters_by_ft = tools.formatters or {},
   },
