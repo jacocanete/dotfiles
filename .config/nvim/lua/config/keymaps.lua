@@ -6,7 +6,7 @@
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 
 -- Custom Keymaps
-vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "[-] Open parent directory" })
 
 -- Diagnostic keymaps
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
@@ -40,14 +40,5 @@ vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
--- Disable arrow keys for navigation to encourage hjkl usage
-vim.keymap.set({ "n", "v" }, "<Up>", "<Nop>")
-vim.keymap.set({ "n", "v" }, "<Down>", "<Nop>")
-vim.keymap.set({ "n", "v" }, "<Left>", "<Nop>")
-vim.keymap.set({ "n", "v" }, "<Right>", "<Nop>")
-
--- Also disable in insert mode
-vim.keymap.set("i", "<Up>", "<Nop>")
-vim.keymap.set("i", "<Down>", "<Nop>")
-vim.keymap.set("i", "<Left>", "<Nop>")
-vim.keymap.set("i", "<Right>", "<Nop>")
+-- Turn off signature help
+vim.keymap.set("i", "<c-s>", function() end, { desc = "Disabled" })
