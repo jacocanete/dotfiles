@@ -12,7 +12,7 @@ return {
 		main = "nvim-treesitter.configs", -- Sets main module to use for opts
 		-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
 		opts = {
-			ensure_installed = tools.languages,
+			ensure_installed = tools.languages or {},
 			-- Autoinstall languages that are not installed
 			auto_install = true,
 			highlight = {
