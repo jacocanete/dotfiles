@@ -143,6 +143,11 @@ function y() {
 	rm -f -- "$tmp"
 }
 
+# Yazi file manager hotkey
+bindkey -s '^E' 'y\n'
+
 export PATH="$HOME/.cargo/bin:$PATH"
 
 export XDG_CONFIG_HOME="$HOME/.config"
+
+. "/home/jacocanete/.deno/env"
