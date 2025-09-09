@@ -5,7 +5,6 @@ local function is_deno_project(filename)
   return util.root_pattern("deno.json", "deno.jsonc")(filename)
 end
 
-
 return {
   -- Utility functions
   is_deno_project = is_deno_project,
@@ -19,10 +18,10 @@ return {
     javascriptreact = { "eslint_d" },
     typescriptreact = { "eslint_d" },
     json = { "prettier" },
-    markdown = { "markdownlint" },
+    -- markdown = { "markdownlint" },
     sh = { "shfmt" },
     -- Conform can also run multiple formatters sequentially
-    -- python = { "isort", "black" },
+    python = { "isort", "black" },
     --
     -- You can use 'stop_after_first' to run the first available formatter from the list
     -- javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -53,17 +52,13 @@ return {
     --
     -- But for many setups, the LSP (`ts_ls`) will work just fine
     denols = {
-      root_dir = function(fname)
-        return is_deno_project(fname)
-      end,
+      root_dir = function(fname) return is_deno_project(fname) end,
       single_file_support = false,
     },
     ts_ls = {
       root_dir = function(fname)
         local util = require "lspconfig.util"
-        if is_deno_project(fname) then
-          return nil
-        end
+        if is_deno_project(fname) then return nil end
         return util.root_pattern("package.json", "tsconfig.json", "jsconfig.json", ".git")(fname)
       end,
       single_file_support = false,
@@ -102,10 +97,13 @@ return {
             "wordpress",
             "pcre",
             "fileinfo",
+            "hash",
             "standard",
             "json",
             "SPL",
             "date",
+            "random",
+            "Reflection",
           },
           environment = {
             includePaths = {
@@ -149,6 +147,7 @@ return {
         },
       },
       filetypes = { "css", "scss" },
+      root_dir = function(...) return require("lspconfig.util").root_pattern("package.json", ".git")(...) end,
     },
     emmet_language_server = {
       filetypes = {
@@ -173,6 +172,27 @@ return {
           },
           -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
           diagnostics = { disable = { "missing-fields" } },
+        },
+      },
+    },
+    -- Java Language Server
+    jdtls = {},
+    -- Python Language Server
+    pylsp = {
+      settings = {
+        pylsp = {
+          plugins = {
+            pycodestyle = { enabled = false },
+            mccabe = { enabled = false },
+            pyflakes = { enabled = false },
+            flake8 = { enabled = false },
+            autopep8 = { enabled = false },
+            yapf = { enabled = false },
+            pylint = { enabled = false },
+            -- Enable rope for refactoring
+            rope_completion = { enabled = true },
+            rope_autoimport = { enabled = true },
+          },
         },
       },
     },
@@ -203,5 +223,6 @@ return {
     "css",
     "scss",
     "php",
+    "python",
   },
 }

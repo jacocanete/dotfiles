@@ -115,14 +115,13 @@ return {
 
       -- Configure base directories to search for git repositories
       local git_base_folders = {
-        vim.fn.expand "~/Local Sites",
         vim.fn.expand "~/Projects",
       }
 
       -- Custom function to find git repositories in configured directories
       vim.keymap.set("n", "<leader>sp", function()
         local git_repos = {}
-        local max_depth = 8
+        local max_depth = 3
 
         -- Search each configured base directory
         for _, base_path in ipairs(git_base_folders) do
