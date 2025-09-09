@@ -12,7 +12,7 @@
 	email = jacogagarincanete@gmail.com
 	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF2L47F33A4BUqo+MAs8UJBwBzFZ/w+6YcBDrw81GS69
 
-[includeIf "gitdir:~/Local\\ Sites/"]
+[includeIf "gitdir:~/Projects/digitalimpulse/"]
 	# Use alternate config file for work
 	path = ~/.config/git/digitalimpulse/config
 	# Will use default config file for personal

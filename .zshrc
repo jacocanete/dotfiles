@@ -151,3 +151,5 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export XDG_CONFIG_HOME="$HOME/.config"
 
 . "/home/jacocanete/.deno/env"
+export WINEESYNC=1
+export WINEFSYNC=1
