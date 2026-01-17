@@ -80,6 +80,7 @@ return {
       vim.keymap.set("n", "<leader>sd", builtin.diagnostics, { desc = "[S]earch [D]iagnostics" })
       vim.keymap.set("n", "<leader>sr", builtin.resume, { desc = "[S]earch [R]esume" })
       vim.keymap.set("n", "<leader>s.", builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
+      vim.keymap.set("n", "<leader>sc", builtin.git_bcommits, { desc = "[S]earch [C]ommits (file history)" })
       vim.keymap.set("n", "<leader><leader>", builtin.buffers, { desc = "[ ] Find existing buffers" })
 
       -- Slightly advanced example of overriding default behavior and theme
@@ -115,14 +116,13 @@ return {
 
       -- Configure base directories to search for git repositories
       local git_base_folders = {
-        vim.fn.expand "~/Local Sites",
         vim.fn.expand "~/Projects",
       }
 
       -- Custom function to find git repositories in configured directories
       vim.keymap.set("n", "<leader>sp", function()
         local git_repos = {}
-        local max_depth = 8
+        local max_depth = 3
 
         -- Search each configured base directory
         for _, base_path in ipairs(git_base_folders) do

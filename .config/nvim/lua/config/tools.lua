@@ -5,7 +5,6 @@ local function is_deno_project(filename)
   return util.root_pattern("deno.json", "deno.jsonc")(filename)
 end
 
-
 return {
   -- Utility functions
   is_deno_project = is_deno_project,
@@ -14,15 +13,16 @@ return {
   formatters = {
     lua = { "stylua" },
     php = { "phpcbf" },
-    javascript = { "eslint_d" },
-    typescript = { "eslint_d" },
-    javascriptreact = { "eslint_d" },
-    typescriptreact = { "eslint_d" },
+    javascript = { "prettier", "eslint_d" },
+    typescript = { "prettier", "eslint_d" },
+    javascriptreact = { "prettier", "eslint_d" },
+    typescriptreact = { "prettier", "eslint_d" },
     json = { "prettier" },
-    markdown = { "markdownlint" },
+    vue = { "prettier", "eslint_d" },
+    -- markdown = { "markdownlint" },
     sh = { "shfmt" },
     -- Conform can also run multiple formatters sequentially
-    -- python = { "isort", "black" },
+    python = { "isort", "black" },
     --
     -- You can use 'stop_after_first' to run the first available formatter from the list
     -- javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -37,6 +37,7 @@ return {
     php = { "phpcs" },
     json = { "jsonlint" },
     markdown = { "markdownlint" },
+    vue = { "eslint_d" },
   },
 
   -- LSP Servers (used by lsp.lua)
@@ -53,23 +54,29 @@ return {
     --
     -- But for many setups, the LSP (`ts_ls`) will work just fine
     denols = {
-      root_dir = function(fname)
-        return is_deno_project(fname)
-      end,
+      root_dir = function(fname) return is_deno_project(fname) end,
       single_file_support = false,
     },
     ts_ls = {
+      filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
       root_dir = function(fname)
         local util = require "lspconfig.util"
-        if is_deno_project(fname) then
-          return nil
-        end
+        if is_deno_project(fname) then return nil end
         return util.root_pattern("package.json", "tsconfig.json", "jsconfig.json", ".git")(fname)
       end,
       single_file_support = false,
+      init_options = {
+        plugins = {
+          {
+            name = "@vue/typescript-plugin",
+            location = "/home/jacocanete/.local/share/fnm/node-versions/v24.0.1/installation/lib/node_modules/@vue/language-server",
+            languages = { "vue" },
+          },
+        },
+      },
       capabilities = {
-        documentFormattingProvider = false,
-        documentRangeFormattingProvider = false,
+        documentFormattingProvider = true,
+        documentRangeFormattingProvider = true,
       },
     },
     intelephense = {
@@ -102,10 +109,13 @@ return {
             "wordpress",
             "pcre",
             "fileinfo",
+            "hash",
             "standard",
             "json",
             "SPL",
             "date",
+            "random",
+            "Reflection",
           },
           environment = {
             includePaths = {
@@ -149,6 +159,7 @@ return {
         },
       },
       filetypes = { "css", "scss" },
+      root_dir = function(...) return require("lspconfig.util").root_pattern("package.json", ".git")(...) end,
     },
     emmet_language_server = {
       filetypes = {
@@ -176,6 +187,35 @@ return {
         },
       },
     },
+    -- Java Language Server
+    jdtls = {},
+    -- Python Language Server
+    pylsp = {
+      settings = {
+        pylsp = {
+          plugins = {
+            pycodestyle = { enabled = false },
+            mccabe = { enabled = false },
+            pyflakes = { enabled = false },
+            flake8 = { enabled = false },
+            autopep8 = { enabled = false },
+            yapf = { enabled = false },
+            pylint = { enabled = false },
+            -- Enable rope for refactoring
+            rope_completion = { enabled = true },
+            rope_autoimport = { enabled = true },
+          },
+        },
+      },
+    },
+    volar = {
+      filetypes = { "vue" },
+      init_options = {
+        vue = {
+          hybridMode = true,
+        },
+      },
+    },
   },
 
   -- Additional tools (linters, debuggers, etc.)
@@ -183,6 +223,7 @@ return {
   -- Tools that are automatically installed are the ones from tools.lsp, tools.linters, and tools.formatters
   additional_tools = {
     "typescript-language-server",
+    "vue-language-server",
   },
 
   -- Languages (used by nvim-treesitter)
@@ -203,5 +244,7 @@ return {
     "css",
     "scss",
     "php",
+    "python",
+    "vue",
   },
 }

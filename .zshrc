@@ -71,6 +71,7 @@ ZSH_THEME="robbyrussell"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
+	wp-cli
 	git
 	zsh-autosuggestions
 	history
@@ -151,3 +152,45 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export XDG_CONFIG_HOME="$HOME/.config"
 
 . "/home/jacocanete/.deno/env"
+export WINEESYNC=1
+export WINEFSYNC=1
+
+#Claude said this would set Zellij tab names on cd.
+zellij_tab_name_update() {
+  if [[ -n $ZELLIJ ]]; then
+    tab_name=''
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        tab_name+=$(basename "$(git rev-parse --show-toplevel)")/
+        tab_name+=$(git rev-parse --show-prefix)
+        tab_name=${tab_name%/}
+    else
+        tab_name=$PWD
+            if [[ $tab_name == $HOME ]]; then
+         	tab_name="~"
+             else
+         	tab_name=${tab_name##*/}
+             fi
+    fi
+    command nohup zellij action rename-tab $tab_name >/dev/null 2>&1
+  fi
+}
+
+chpwd_functions+=(zellij_tab_name_update)
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="/home/jacocanete/.sdkman"
+[[ -s "/home/jacocanete/.sdkman/bin/sdkman-init.sh" ]] && source "/home/jacocanete/.sdkman/bin/sdkman-init.sh"
+
+if [[ -n $ZELLIJ ]]; then
+    zellij_tab_name_update
+fi
+
+export DOCKER_HOST=unix:///run/docker.sock
+export PATH=/usr/local/cuda/bin:$PATH
+
+# bun completions
+[ -s "/home/jacocanete/.bun/_bun" ] && source "/home/jacocanete/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
