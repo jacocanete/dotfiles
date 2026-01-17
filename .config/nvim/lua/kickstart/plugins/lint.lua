@@ -5,9 +5,26 @@ return {
   { -- Linting
     "mfussenegger/nvim-lint",
     event = { "BufReadPre", "BufNewFile" },
+    keys = {
+      {
+        "<leader>tl",
+        function()
+          vim.g.disable_lint = not vim.g.disable_lint
+          if vim.g.disable_lint then
+            vim.notify("Linting disabled", vim.log.levels.INFO)
+            vim.diagnostic.reset()
+          else
+            vim.notify("Linting enabled", vim.log.levels.INFO)
+            require("lint").try_lint()
+          end
+        end,
+        desc = "[T]oggle [L]inting",
+      },
+    },
     config = function()
       local lint = require "lint"
       lint.linters_by_ft = tools.linters or {}
+
 
       vim.diagnostic.config {
         virtual_text = {
@@ -53,6 +70,11 @@ return {
       vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
         group = lint_augroup,
         callback = function()
+          -- Check if linting is globally disabled
+          if vim.g.disable_lint then
+            return
+          end
+
           -- Only run the linter in buffers that you can modify in order to
           -- avoid superfluous noise, notably within the handy LSP pop-ups that
           -- describe the hovered symbol using Markdown.
