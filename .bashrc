@@ -44,3 +44,7 @@ eval "$(zoxide init --cmd cd bash)"
 
 alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'
 export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json:/usr/share/vulkan/icd.d/nvidia_icd.i686.json
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="/home/jacocanete/.sdkman"
+[[ -s "/home/jacocanete/.sdkman/bin/sdkman-init.sh" ]] && source "/home/jacocanete/.sdkman/bin/sdkman-init.sh"
