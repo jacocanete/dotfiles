@@ -246,6 +246,11 @@ return {
       vim.list_extend(ensure_installed, tools_needed)
       vim.list_extend(ensure_installed, tools.additional_tools)
 
+      -- Filter out servers that have different Mason package names
+      ensure_installed = vim.tbl_filter(function(name)
+        return name ~= "volar"
+      end, ensure_installed)
+
       -- Will deduplicate the list interally (probably)
       require("mason-tool-installer").setup { ensure_installed = ensure_installed }
 

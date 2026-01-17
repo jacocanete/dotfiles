@@ -13,11 +13,12 @@ return {
   formatters = {
     lua = { "stylua" },
     php = { "phpcbf" },
-    javascript = { "eslint_d" },
-    typescript = { "eslint_d" },
-    javascriptreact = { "eslint_d" },
-    typescriptreact = { "eslint_d" },
+    javascript = { "prettier", "eslint_d" },
+    typescript = { "prettier", "eslint_d" },
+    javascriptreact = { "prettier", "eslint_d" },
+    typescriptreact = { "prettier", "eslint_d" },
     json = { "prettier" },
+    vue = { "prettier", "eslint_d" },
     -- markdown = { "markdownlint" },
     sh = { "shfmt" },
     -- Conform can also run multiple formatters sequentially
@@ -36,6 +37,7 @@ return {
     php = { "phpcs" },
     json = { "jsonlint" },
     markdown = { "markdownlint" },
+    vue = { "eslint_d" },
   },
 
   -- LSP Servers (used by lsp.lua)
@@ -56,15 +58,25 @@ return {
       single_file_support = false,
     },
     ts_ls = {
+      filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
       root_dir = function(fname)
         local util = require "lspconfig.util"
         if is_deno_project(fname) then return nil end
         return util.root_pattern("package.json", "tsconfig.json", "jsconfig.json", ".git")(fname)
       end,
       single_file_support = false,
+      init_options = {
+        plugins = {
+          {
+            name = "@vue/typescript-plugin",
+            location = "/home/jacocanete/.local/share/fnm/node-versions/v24.0.1/installation/lib/node_modules/@vue/language-server",
+            languages = { "vue" },
+          },
+        },
+      },
       capabilities = {
-        documentFormattingProvider = false,
-        documentRangeFormattingProvider = false,
+        documentFormattingProvider = true,
+        documentRangeFormattingProvider = true,
       },
     },
     intelephense = {
@@ -196,6 +208,14 @@ return {
         },
       },
     },
+    volar = {
+      filetypes = { "vue" },
+      init_options = {
+        vue = {
+          hybridMode = true,
+        },
+      },
+    },
   },
 
   -- Additional tools (linters, debuggers, etc.)
@@ -203,6 +223,7 @@ return {
   -- Tools that are automatically installed are the ones from tools.lsp, tools.linters, and tools.formatters
   additional_tools = {
     "typescript-language-server",
+    "vue-language-server",
   },
 
   -- Languages (used by nvim-treesitter)
@@ -224,5 +245,6 @@ return {
     "scss",
     "php",
     "python",
+    "vue",
   },
 }

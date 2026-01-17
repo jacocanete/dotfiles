@@ -31,6 +31,22 @@ return {
       ---@diagnostic disable-next-line: duplicate-set-field
       statusline.section_location = function() return "%2l:%-2v" end
 
+      -- Add custom section for format/lint status warnings
+      ---@diagnostic disable-next-line: duplicate-set-field
+      statusline.section_diagnostics = function()
+        local warnings = {}
+        if vim.g.disable_autoformat then
+          table.insert(warnings, "FMT")
+        end
+        if vim.g.disable_lint then
+          table.insert(warnings, "LINT")
+        end
+        if #warnings > 0 then
+          return "⚠ " .. table.concat(warnings, " ")
+        end
+        return ""
+      end
+
       -- ... and there is more!
       -- Check out: https://github.com/echasnovski/mini.nvim
     end,
