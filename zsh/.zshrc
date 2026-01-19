@@ -177,10 +177,6 @@ zellij_tab_name_update() {
 
 chpwd_functions+=(zellij_tab_name_update)
 
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="/home/jacocanete/.sdkman"
-[[ -s "/home/jacocanete/.sdkman/bin/sdkman-init.sh" ]] && source "/home/jacocanete/.sdkman/bin/sdkman-init.sh"
-
 if [[ -n $ZELLIJ ]]; then
     zellij_tab_name_update
 fi
@@ -194,3 +190,5 @@ export PATH=/usr/local/cuda/bin:$PATH
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+
+export SSH_AUTH_SOCK=/home/jacocanete/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock

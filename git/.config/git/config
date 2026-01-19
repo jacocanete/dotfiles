@@ -1,16 +1,13 @@
 [gpg]
 	format = ssh
 
-[gpg "ssh"]
-	program = /opt/1Password/op-ssh-sign
-
 [commit]
 	gpgsign = true
 
 [user]
 	name = jacocanete
 	email = jacogagarincanete@gmail.com
-	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF2L47F33A4BUqo+MAs8UJBwBzFZ/w+6YcBDrw81GS69
+	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAk0LD2qgmJPenblp046Wt8fFFqaVoGHBOU26sRpLMYE
 
 [includeIf "gitdir:~/Projects/digitalimpulse/"]
 	# Use alternate config file for work
