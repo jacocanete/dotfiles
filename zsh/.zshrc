@@ -74,6 +74,7 @@ plugins=(
 	wp-cli
 	git
 	zsh-autosuggestions
+  zsh-syntax-highlighting
 	history
 )
 
