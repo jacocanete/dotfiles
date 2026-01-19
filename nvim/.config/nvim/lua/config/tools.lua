@@ -1,9 +1,6 @@
 -- lua/config/tools.lua
 
-local function is_deno_project(filename)
-  local util = require "lspconfig.util"
-  return util.root_pattern("deno.json", "deno.jsonc")(filename)
-end
+local function is_deno_project(bufnr) return vim.fs.root(bufnr, { "deno.json", "deno.jsonc" }) end
 
 return {
   -- Utility functions
@@ -18,7 +15,6 @@ return {
     javascriptreact = { "prettier", "eslint_d" },
     typescriptreact = { "prettier", "eslint_d" },
     json = { "prettier" },
-    vue = { "prettier", "eslint_d" },
     -- markdown = { "markdownlint" },
     sh = { "shfmt" },
     -- Conform can also run multiple formatters sequentially
@@ -37,7 +33,6 @@ return {
     php = { "phpcs" },
     json = { "jsonlint" },
     markdown = { "markdownlint" },
-    vue = { "eslint_d" },
   },
 
   -- LSP Servers (used by lsp.lua)
@@ -54,26 +49,20 @@ return {
     --
     -- But for many setups, the LSP (`ts_ls`) will work just fine
     denols = {
-      root_dir = function(fname) return is_deno_project(fname) end,
+      root_dir = function(bufnr, on_dir)
+        local root = is_deno_project(bufnr)
+        if root then on_dir(root) end
+      end,
       single_file_support = false,
     },
     ts_ls = {
-      filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
-      root_dir = function(fname)
-        local util = require "lspconfig.util"
-        if is_deno_project(fname) then return nil end
-        return util.root_pattern("package.json", "tsconfig.json", "jsconfig.json", ".git")(fname)
+      filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact" },
+      root_dir = function(bufnr, on_dir)
+        if is_deno_project(bufnr) then return end
+        local root = vim.fs.root(bufnr, { "package.json", "tsconfig.json", "jsconfig.json", ".git" })
+        if root then on_dir(root) end
       end,
       single_file_support = false,
-      init_options = {
-        plugins = {
-          {
-            name = "@vue/typescript-plugin",
-            location = "/home/jacocanete/.local/share/fnm/node-versions/v24.0.1/installation/lib/node_modules/@vue/language-server",
-            languages = { "vue" },
-          },
-        },
-      },
       capabilities = {
         documentFormattingProvider = true,
         documentRangeFormattingProvider = true,
@@ -159,7 +148,10 @@ return {
         },
       },
       filetypes = { "css", "scss" },
-      root_dir = function(...) return require("lspconfig.util").root_pattern("package.json", ".git")(...) end,
+      root_dir = function(bufnr, on_dir)
+        local root = vim.fs.root(bufnr, { "package.json", ".git" })
+        if root then on_dir(root) end
+      end,
     },
     emmet_language_server = {
       filetypes = {
@@ -208,14 +200,6 @@ return {
         },
       },
     },
-    volar = {
-      filetypes = { "vue" },
-      init_options = {
-        vue = {
-          hybridMode = true,
-        },
-      },
-    },
   },
 
   -- Additional tools (linters, debuggers, etc.)
@@ -223,7 +207,6 @@ return {
   -- Tools that are automatically installed are the ones from tools.lsp, tools.linters, and tools.formatters
   additional_tools = {
     "typescript-language-server",
-    "vue-language-server",
   },
 
   -- Languages (used by nvim-treesitter)
@@ -245,6 +228,5 @@ return {
     "scss",
     "php",
     "python",
-    "vue",
   },
 }
