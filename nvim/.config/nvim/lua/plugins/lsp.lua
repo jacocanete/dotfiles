@@ -261,12 +261,14 @@ return {
         automatic_installation = false,
       }
 
-      -- Setup LSP servers
-      -- Resets capabilities for each each server and adds from servers.lua
+      -- Setup LSP servers using vim.lsp.config (Neovim 0.11+)
       for server, config in pairs(tools.servers) do
         config.capabilities = vim.tbl_deep_extend("force", {}, capabilities, config.capabilities or {})
-        require("lspconfig")[server].setup(config)
+        vim.lsp.config(server, config)
       end
+
+      -- Enable all configured servers
+      vim.lsp.enable(vim.tbl_keys(tools.servers))
     end,
   },
   {
