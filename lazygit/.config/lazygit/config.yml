@@ -1,3 +1,7 @@
+services:
+  "personalgit": "github:github.com"
+  "workgit": "github:github.com"
+
 customCommands:
   - key: "C"
     context: "files"
