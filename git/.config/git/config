@@ -34,5 +34,6 @@
 	branch = true
 	showStash = true
 	showUntrackedFiles = true
+
 [init]
 	defaultBranch = main
