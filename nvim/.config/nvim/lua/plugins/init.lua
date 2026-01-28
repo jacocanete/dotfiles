@@ -37,6 +37,7 @@ require("lazy").setup({
   { import = "plugins.misc" },
   { import = "plugins.harpoon" },
   { import = "plugins.markdown" },
+  { import = "plugins.lazygit" },
 
   -- Import kickstart plugins
   require "kickstart.plugins.debug",
