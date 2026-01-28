@@ -84,4 +84,6 @@ vim.o.scrolloff = 10
 vim.o.confirm = true
 
 vim.o.colorcolumn = "100" -- Show vertical line at column 100
+vim.o.textwidth = 100 -- Wrap lines at 100 characters
+vim.opt.formatoptions:append "t"
 vim.o.scrolloff = 8
