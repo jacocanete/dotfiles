@@ -7,6 +7,7 @@ return {
     picker = { ui_select = true },
     notifier = { enabled = true },
     input = { enabled = true },
+    renamer = { enabled = true },
   },
   keys = {
     -- Search
