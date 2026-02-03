@@ -83,27 +83,22 @@ return {
         end, vim.tbl_extend("force", opts, { desc = "AI commit message" }))
 
         -- Quick keymaps for common operations (in fugitive buffer)
-        vim.keymap.set("n", "<leader>gp", "<cmd>Git push<cr>", vim.tbl_extend("force", opts, { desc = "[G]it [P]ush" }))
-        vim.keymap.set("n", "<leader>gP", "<cmd>Git pull<cr>", vim.tbl_extend("force", opts, { desc = "[G]it Pul[L]" }))
-        vim.keymap.set(
-          "n",
-          "<leader>gf",
-          "<cmd>Git fetch<cr>",
-          vim.tbl_extend("force", opts, { desc = "[G]it [F]etch" })
-        )
-        vim.keymap.set("n", "<leader>gl", "<cmd>Git log<cr>", vim.tbl_extend("force", opts, { desc = "[G]it [L]og" }))
+        vim.keymap.set("n", "<leader>gp", "<cmd>Git push<cr>", vim.tbl_extend("force", opts, { desc = "git [p]ush" }))
+        vim.keymap.set("n", "<leader>gP", "<cmd>Git pull<cr>", vim.tbl_extend("force", opts, { desc = "git [P]ull" }))
+        vim.keymap.set("n", "<leader>gf", "<cmd>Git fetch<cr>", vim.tbl_extend("force", opts, { desc = "git [f]etch" }))
+        vim.keymap.set("n", "<leader>gl", "<cmd>Git log<cr>", vim.tbl_extend("force", opts, { desc = "git [l]og" }))
       end,
     })
   end,
   keys = {
-    { "<leader>gs", "<cmd>Git<cr>", desc = "[G]it [S]tatus" },
-    { "<leader>gc", "<cmd>Git commit<cr>", desc = "[G]it [C]ommit" },
-    { "<leader>gh", "<cmd>Git log -- %<cr>", desc = "[G]it [H]istory (file)" },
-    { "<leader>gv", "<cmd>Gvdiffsplit<cr>", desc = "[G]it [V]ertical diff" },
-    { "<leader>gb", "<cmd>Git blame<cr>", desc = "[G]it [B]lame" },
-    { "<leader>gw", "<cmd>Gwrite<cr>", desc = "[G]it [W]rite (stage file)" },
-    { "<leader>gr", "<cmd>Gread<cr>", desc = "[G]it [R]ead (revert buffer)" },
-    { "<leader>gd", "<cmd>Git diff %<cr>", desc = "[G]it [D]iff (file)" },
-    { "<leader>gD", "<cmd>Git diff --staged %<cr>", desc = "[G]it [D]iff staged (file)" },
+    { "<leader>gs", "<cmd>Git<cr>", desc = "git [s]tatus" },
+    { "<leader>gc", "<cmd>Git commit<cr>", desc = "git [c]ommit" },
+    { "<leader>gh", "<cmd>Git log -- %<cr>", desc = "git [h]istory (file)" },
+    { "<leader>gv", "<cmd>Gvdiffsplit<cr>", desc = "git [v]ertical diff" },
+    { "<leader>gb", "<cmd>Git blame<cr>", desc = "git [b]lame" },
+    { "<leader>gw", "<cmd>Gwrite<cr>", desc = "git [w]rite (stage file)" },
+    { "<leader>gr", "<cmd>Gread<cr>", desc = "git [r]ead (revert buffer)" },
+    { "<leader>gd", "<cmd>Git diff %<cr>", desc = "git [d]iff (file)" },
+    { "<leader>gD", "<cmd>Git diff --staged %<cr>", desc = "git [D]iff staged (file)" },
   },
 }

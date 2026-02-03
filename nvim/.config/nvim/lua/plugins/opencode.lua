@@ -13,15 +13,10 @@ return {
       { "n", "x" },
       "<C-a>",
       function() require("opencode").ask("@this: ", { submit = true }) end,
-      { desc = "[O]pencode [A]sk" }
+      { desc = "Opencode ask" }
     )
-    vim.keymap.set({ "n", "x" }, "<C-x>", function() require("opencode").select() end, { desc = "[O]pencode [S]elect" })
-    vim.keymap.set(
-      { "n", "t" },
-      "<C-/>",
-      function() require("opencode").toggle() end,
-      { desc = "[O]pencode [T]erminal" }
-    )
+    vim.keymap.set({ "n", "x" }, "<C-x>", function() require("opencode").select() end, { desc = "Opencode select" })
+    vim.keymap.set({ "n", "t" }, "<C-/>", function() require("opencode").toggle() end, { desc = "Opencode terminal" })
 
     vim.keymap.set(
       "n",
