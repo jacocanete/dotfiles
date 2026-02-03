@@ -27,17 +27,19 @@ require("lazy").setup({
   { "NMAC427/guess-indent.nvim", opts = {} },
 
   -- Import all plugin configurations
-  { import = "plugins.telescope" },
+  { import = "plugins.snacks" },
   { import = "plugins.lsp" },
   { import = "plugins.completion" },
   { import = "plugins.treesitter" },
   { import = "plugins.ui" },
+  { import = "plugins.lualine" },
   { import = "plugins.formatting" },
   { import = "plugins.oil" },
   { import = "plugins.misc" },
   { import = "plugins.harpoon" },
   { import = "plugins.markdown" },
-  { import = "plugins.lazygit" },
+  { import = "plugins.fugitive" },
+  { import = "plugins.opencode" },
 
   -- Import kickstart plugins
   require "kickstart.plugins.debug",
