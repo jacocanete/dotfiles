@@ -1,6 +1,7 @@
 ---@diagnostic disable: undefined-global
 return {
   "tpope/vim-fugitive",
+  cmd = { "Git", "G", "Gwrite", "Gread", "Gvdiffsplit", "Gdiffsplit", "Gclog" },
   config = function()
     -- Only set up keymaps in Fugitive buffers
     vim.api.nvim_create_autocmd("FileType", {
@@ -13,7 +14,7 @@ return {
 
         vim.keymap.set("n", "C", function()
           -- Check if claude CLI is available
-          if vim.fn.executable("claude") ~= 1 then
+          if vim.fn.executable "claude" ~= 1 then
             Snacks.notify.error("Claude CLI not found in PATH", { title = "AI Commit" })
             return
           end
