@@ -13,18 +13,18 @@ return {
         local ai_commit_job = nil
 
         vim.keymap.set("n", "C", function()
-          -- Check if claude CLI is available
-          if vim.fn.executable "claude" ~= 1 then
-            Snacks.notify.error("Claude CLI not found in PATH", { title = "AI Commit" })
-            return
-          end
-
           -- Cancel existing job if running
           if ai_commit_job then
             vim.fn.jobstop(ai_commit_job)
             ai_commit_job = nil
             Snacks.notifier.hide "ai_commit"
             Snacks.notify.warn("Cancelled", { title = "AI Commit" })
+            return
+          end
+
+          -- Check if claude CLI is available
+          if vim.fn.executable "claude" ~= 1 then
+            Snacks.notify.error("Claude CLI not found in PATH", { title = "AI Commit" })
             return
           end
 
