@@ -56,9 +56,6 @@ return {
         vim.keymap.set("n", "<leader>gP", "<cmd>Git pull<cr>", vim.tbl_extend("force", opts, { desc = "[G]it [P]ull" }))
       end,
     })
-
-    -- Telescope git branches integration
-    vim.keymap.set("n", "<leader>gb", "<cmd>Telescope git_branches<cr>", { desc = "[G]it [B]ranches" })
   end,
   keys = {
     { "<leader>gs", "<cmd>Git<cr>", desc = "[G]it [S]tatus" },
