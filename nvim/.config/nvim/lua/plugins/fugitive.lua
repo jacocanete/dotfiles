@@ -75,13 +75,28 @@ return {
           })
         end, vim.tbl_extend("force", opts, { desc = "AI commit message" }))
 
-        -- Quick keymaps for common operations
+        -- Quick keymaps for common operations (in fugitive buffer)
         vim.keymap.set("n", "<leader>gp", "<cmd>Git push<cr>", vim.tbl_extend("force", opts, { desc = "[G]it [P]ush" }))
-        vim.keymap.set("n", "<leader>gP", "<cmd>Git pull<cr>", vim.tbl_extend("force", opts, { desc = "[G]it [P]ull" }))
+        vim.keymap.set("n", "<leader>gP", "<cmd>Git pull<cr>", vim.tbl_extend("force", opts, { desc = "[G]it Pul[L]" }))
+        vim.keymap.set(
+          "n",
+          "<leader>gf",
+          "<cmd>Git fetch<cr>",
+          vim.tbl_extend("force", opts, { desc = "[G]it [F]etch" })
+        )
+        vim.keymap.set("n", "<leader>gl", "<cmd>Git log<cr>", vim.tbl_extend("force", opts, { desc = "[G]it [L]og" }))
       end,
     })
   end,
   keys = {
     { "<leader>gs", "<cmd>Git<cr>", desc = "[G]it [S]tatus" },
+    { "<leader>gc", "<cmd>Git commit<cr>", desc = "[G]it [C]ommit" },
+    { "<leader>gh", "<cmd>Git log -- %<cr>", desc = "[G]it [H]istory (file)" },
+    { "<leader>gv", "<cmd>Gvdiffsplit<cr>", desc = "[G]it [V]ertical diff" },
+    { "<leader>gb", "<cmd>Git blame<cr>", desc = "[G]it [B]lame" },
+    { "<leader>gw", "<cmd>Gwrite<cr>", desc = "[G]it [W]rite (stage file)" },
+    { "<leader>gr", "<cmd>Gread<cr>", desc = "[G]it [R]ead (revert buffer)" },
+    { "<leader>gd", "<cmd>Git diff %<cr>", desc = "[G]it [D]iff (file)" },
+    { "<leader>gD", "<cmd>Git diff --staged %<cr>", desc = "[G]it [D]iff staged (file)" },
   },
 }
