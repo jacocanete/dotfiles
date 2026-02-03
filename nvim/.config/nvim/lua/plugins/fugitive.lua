@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global
 return {
   "tpope/vim-fugitive",
   config = function()
@@ -7,48 +8,71 @@ return {
       callback = function(event)
         local opts = { buffer = event.buf }
 
-        -- Register Fugitive keymaps with which-key for discoverability
-        local wk = require("which-key")
-        wk.add({
-          { "s", desc = "Stage file/hunk", buffer = event.buf },
-          { "u", desc = "Unstage file/hunk", buffer = event.buf },
-          { "-", desc = "Toggle stage/unstage", buffer = event.buf },
-          { "=", desc = "Toggle inline diff", buffer = event.buf },
-          { "cc", desc = "Commit", buffer = event.buf },
-          { "ca", desc = "Commit --amend", buffer = event.buf },
-          { "ce", desc = "Commit --amend --no-edit", buffer = event.buf },
-          { "cw", desc = "Commit --amend (reword only)", buffer = event.buf },
-          { "C", desc = "AI commit message", buffer = event.buf },
-          { "dd", desc = "Diff file", buffer = event.buf },
-          { "dv", desc = "Diff file (vertical split)", buffer = event.buf },
-          { "X", desc = "Discard change", buffer = event.buf },
-          { "g?", desc = "Show all keybindings", buffer = event.buf },
-        })
-
         -- AI-generated commit message (Shift+C)
+        local ai_commit_job = nil
+
         vim.keymap.set("n", "C", function()
+          -- Cancel existing job if running
+          if ai_commit_job then
+            vim.fn.jobstop(ai_commit_job)
+            ai_commit_job = nil
+            Snacks.notifier.hide "ai_commit"
+            Snacks.notify.warn("Cancelled", { title = "AI Commit" })
+            return
+          end
+
           -- Check if there are staged changes
           vim.fn.system "git diff --cached --quiet"
           if vim.v.shell_error == 0 then
-            vim.notify("No staged changes to commit", vim.log.levels.WARN)
+            Snacks.notify.warn("No staged changes to commit", { title = "AI Commit" })
             return
           end
 
-          -- Generate commit message with Claude Code CLI
+          -- Spinner frames
+          local spinner = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
+
+          -- Show progress notification with spinner
+          Snacks.notify.info("Generating commit message...", {
+            id = "ai_commit",
+            title = "AI Commit",
+            timeout = false,
+            opts = function(notif) notif.icon = spinner[math.floor(vim.uv.hrtime() / (1e6 * 80)) % #spinner + 1] end,
+          })
+
           local claude_cmd =
             [[git diff --staged | claude -p 'Generate a concise git commit message for these staged changes. Output ONLY the raw commit message with no markdown, no code blocks, no backticks, no explanations. Use conventional commit format.' --model haiku --output-format text --strict-mcp-config --mcp-config $HOME/.config/claude/mcp-empty.json]]
 
-          local commit_msg = vim.fn.system(claude_cmd)
+          local output = {}
 
-          if vim.v.shell_error ~= 0 then
-            vim.notify("Failed to generate commit message", vim.log.levels.ERROR)
-            return
-          end
+          ai_commit_job = vim.fn.jobstart(claude_cmd, {
+            stdout_buffered = true,
+            on_stdout = function(_, data)
+              if data then output = data end
+            end,
+            on_exit = function(_, exit_code)
+              ai_commit_job = nil
+              Snacks.notifier.hide "ai_commit"
 
-          -- Write to temp file and open commit buffer
-          local tmp = "/tmp/nvim_ai_commit_msg"
-          vim.fn.writefile(vim.split(commit_msg, "\n"), tmp)
-          vim.cmd("Git commit -e -F " .. tmp)
+              if exit_code ~= 0 then
+                Snacks.notify.error("Failed to generate commit message", { title = "AI Commit" })
+                return
+              end
+
+              local commit_msg = table.concat(output, "\n")
+              if vim.trim(commit_msg) == "" then
+                Snacks.notify.error("Empty response from Claude", { title = "AI Commit" })
+                return
+              end
+
+              -- Write to temp file and open commit buffer (must be scheduled to main thread)
+              vim.schedule(function()
+                local tmp = "/tmp/nvim_ai_commit_msg"
+                vim.fn.writefile(vim.split(commit_msg, "\n"), tmp)
+                Snacks.notify.info("Commit message ready!", { title = "AI Commit", timeout = 2000 })
+                vim.cmd("Git commit -e -F " .. tmp)
+              end)
+            end,
+          })
         end, vim.tbl_extend("force", opts, { desc = "AI commit message" }))
 
         -- Quick keymaps for common operations
