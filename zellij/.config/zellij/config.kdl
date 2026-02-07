@@ -395,7 +395,7 @@ default_mode "locked"
 // The name of the default layout to load on startup
 // Default: "default"
 // 
-default_layout "welcome"
+default_layout "code"
  
 // The folder in which Zellij will look for layouts
 // (Requires restart)
@@ -557,3 +557,39 @@ show_startup_tips false
 // Default: true
 // 
 // show_release_notes false
+
+// Web server configuration
+// web_server true
+web_server_ip "10.121.15.18"
+web_server_port 8082
+web_server_cert "/home/jacocanete/.config/zellij/certs/zellij.pem"
+web_server_key "/home/jacocanete/.config/zellij/certs/zellij-key.pem"
+
+web_client {
+    font "JetBrainsMonoNL Nerd Font Mono"
+    cursor_style "block"
+    theme {
+        // Tokyo Night colors
+        background 26 27 38
+        foreground 169 177 214
+        black 21 22 30
+        red 247 118 142
+        green 158 206 106
+        yellow 224 175 104
+        blue 122 162 247
+        magenta 187 154 247
+        cyan 125 207 255
+        white 169 177 214
+        bright_black 59 66 97
+        bright_red 247 118 142
+        bright_green 158 206 106
+        bright_yellow 224 175 104
+        bright_blue 122 162 247
+        bright_magenta 187 154 247
+        bright_cyan 125 207 255
+        bright_white 192 202 245
+        cursor 169 177 214
+        selection_background 41 46 66
+        selection_foreground 169 177 214
+    }
+}

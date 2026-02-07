@@ -1,41 +1,16 @@
--- UI and Theme plugins
 return {
+  -- Which-key: shows pending keybinds
   {
-    -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    "folke/tokyonight.nvim",
-    priority = 1000, -- Make sure to load this before all the other start plugins.
-    config = function()
-      ---@diagnostic disable-next-line: missing-fields
-      require("tokyonight").setup {
-        styles = {
-          comments = { italic = false }, -- Disable italics in comments
-        },
-      }
-
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme "tokyonight-night"
-    end,
-  },
-
-  {
-    -- Useful plugin to show you pending keybinds.
     "folke/which-key.nvim",
-    event = "VimEnter", -- Sets the loading event to 'VimEnter'
+    event = "VimEnter",
     opts = {
-      -- delay between pressing a key and opening which-key (milliseconds)
-      -- this setting is independent of vim.o.timeoutlen
       delay = 0,
+      preset = "helix",
+      win = {
+        border = "rounded",
+      },
       icons = {
-        -- set icon mappings to true if you have a Nerd Font
         mappings = vim.g.have_nerd_font,
-        -- If you are using a Nerd Font: set icons.keys to an empty table which will use the
-        -- default which-key.nvim defined Nerd Font icons, otherwise define a string table
         keys = vim.g.have_nerd_font and {} or {
           Up = "<Up> ",
           Down = "<Down> ",
@@ -67,12 +42,93 @@ return {
           F12 = "<F12>",
         },
       },
-
-      -- Document existing key chains
       spec = {
-        { "<leader>s", group = "[S]earch" },
-        { "<leader>t", group = "[T]oggle" },
-        { "<leader>h", group = "Git [H]unk", mode = { "n", "v" } },
+        { "<leader>s", group = "[s]earch" },
+        { "<leader>t", group = "[t]oggle" },
+        { "<leader>h", group = "Git [h]unk", mode = { "n", "v" } },
+        { "<leader>g", group = "[g]it" },
+        { "<leader>m", group = "[m]arks (Harpoon)" },
+        { "<leader>u", group = "[u]I" },
+      },
+    },
+  },
+
+  -- Noice: better UI for messages, cmdline, and popupmenu
+  {
+    "folke/noice.nvim",
+    event = "VeryLazy",
+    opts = {
+      lsp = {
+        override = {
+          ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+          ["vim.lsp.util.stylize_markdown"] = true,
+        },
+      },
+      presets = {
+        bottom_search = true,
+        command_palette = true,
+        long_message_to_split = true,
+        inc_rename = false,
+        lsp_doc_border = true,
+      },
+    },
+    dependencies = {
+      "MunifTanjim/nui.nvim",
+    },
+  },
+
+  -- Lualine: statusline
+  {
+    "nvim-lualine/lualine.nvim",
+    dependencies = {
+      "nvim-tree/nvim-web-devicons",
+      "AndreM222/copilot-lualine",
+    },
+    config = function()
+      local function disabled_indicators()
+        local indicators = {}
+        if vim.g.disable_autoformat then table.insert(indicators, "󰉩 FMT") end
+        if vim.g.disable_lint then table.insert(indicators, "󰛄 LINT") end
+        if #indicators > 0 then return table.concat(indicators, " ") end
+        return ""
+      end
+
+      require("lualine").setup {
+        options = {
+          theme = "auto",
+          component_separators = { left = "", right = "" },
+          section_separators = { left = "", right = "" },
+        },
+        sections = {
+          lualine_a = { "mode" },
+          lualine_b = { "branch", "diff", "diagnostics" },
+          lualine_c = { "filename" },
+          lualine_x = {
+            { disabled_indicators, color = { fg = "#ff9e64" } },
+            "copilot",
+            "encoding",
+            "fileformat",
+            "filetype",
+          },
+          lualine_y = { "progress" },
+        },
+      }
+    end,
+  },
+
+  -- Indent guides
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    opts = {
+      indent = {
+        char = "│",
+        tab_char = "┊",
+      },
+      scope = {
+        char = "│",
+        show_start = false,
+        show_end = false,
       },
     },
   },
@@ -87,7 +143,13 @@ return {
 
   -- Colorizer
   {
-    "norcalli/nvim-colorizer.lua",
-    opts = { "scss", "css", "javascript", "php", "html", "json", "toml" },
+    "catgoose/nvim-colorizer.lua",
+    event = "BufReadPre",
+    opts = {
+      filetypes = { "scss", "css", "javascript", "php", "html", "json", "toml" },
+      user_default_options = {
+        names = false,
+      },
+    },
   },
 }

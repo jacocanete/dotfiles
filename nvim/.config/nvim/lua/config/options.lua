@@ -75,15 +75,12 @@ vim.o.inccommand = "split"
 -- Show which line your cursor is on
 vim.o.cursorline = true
 
--- Minimal number of screen lines to keep above and below the cursor.
-vim.o.scrolloff = 10
-
 -- if performing an operation that would fail due to unsaved changes in the buffer (like `:q`),
 -- instead raise a dialog asking if you wish to save the current file(s)
 -- See `:help 'confirm'`
 vim.o.confirm = true
 
 vim.o.colorcolumn = "100" -- Show vertical line at column 100
-vim.o.textwidth = 100 -- Wrap lines at 100 characters
-vim.opt.formatoptions:append "t"
+vim.o.textwidth = 100
 vim.o.scrolloff = 8
+vim.o.autoread = true

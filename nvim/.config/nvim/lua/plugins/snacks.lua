@@ -7,31 +7,67 @@ return {
     picker = { ui_select = true },
     notifier = { enabled = true },
     input = { enabled = true },
+    renamer = { enabled = true },
+    terminal = { enabled = true },
+    toggle = { enabled = true },
   },
+  init = function()
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "VeryLazy",
+      callback = function()
+        Snacks.toggle({
+          name = "Auto Format",
+          get = function() return not vim.g.disable_autoformat end,
+          set = function(state) vim.g.disable_autoformat = not state end,
+        }):map "<leader>tf"
+
+        Snacks.toggle({
+          name = "Linting",
+          get = function() return not vim.g.disable_lint end,
+          set = function(state)
+            vim.g.disable_lint = not state
+            if not state then
+              vim.diagnostic.reset()
+            else
+              require("lint").try_lint()
+            end
+          end,
+        }):map "<leader>tl"
+
+        Snacks.toggle.diagnostics():map "<leader>td"
+        Snacks.toggle.inlay_hints():map "<leader>th"
+        Snacks.toggle.treesitter():map "<leader>tT"
+        Snacks.toggle.option("relativenumber", { name = "Relative Number" }):map "<leader>tn"
+        Snacks.toggle.option("wrap", { name = "Word Wrap" }):map "<leader>tw"
+      end,
+    })
+  end,
   keys = {
     -- Search
-    { "<leader>sh", function() Snacks.picker.help() end, desc = "[S]earch [H]elp" },
-    { "<leader>sk", function() Snacks.picker.keymaps() end, desc = "[S]earch [K]eymaps" },
-    { "<leader>sf", function() Snacks.picker.files() end, desc = "[S]earch [F]iles" },
-    { "<leader>ss", function() Snacks.picker() end, desc = "[S]earch [S]nacks pickers" },
-    { "<leader>sw", function() Snacks.picker.grep_word() end, desc = "[S]earch current [W]ord", mode = { "n", "x" } },
-    { "<leader>sg", function() Snacks.picker.grep() end, desc = "[S]earch by [G]rep" },
-    { "<leader>sd", function() Snacks.picker.diagnostics() end, desc = "[S]earch [D]iagnostics" },
-    { "<leader>sr", function() Snacks.picker.resume() end, desc = "[S]earch [R]esume" },
-    { "<leader>s.", function() Snacks.picker.recent() end, desc = "[S]earch Recent Files" },
-    { "<leader>sc", function() Snacks.picker.git_log_file() end, desc = "[S]earch [C]ommits (file)" },
+    { "<leader>sh", function() Snacks.picker.help() end, desc = "search [h]elp" },
+    { "<leader>sk", function() Snacks.picker.keymaps() end, desc = "search [k]eymaps" },
+    { "<leader>sf", function() Snacks.picker.files() end, desc = "search [f]iles" },
+    { "<leader>ss", function() Snacks.picker() end, desc = "search [s]nacks pickers" },
+    { "<leader>sw", function() Snacks.picker.grep_word() end, desc = "search current [w]ord", mode = { "n", "x" } },
+    { "<leader>sg", function() Snacks.picker.grep() end, desc = "search by [g]rep" },
+    { "<leader>sd", function() Snacks.picker.diagnostics() end, desc = "search [d]iagnostics" },
+    { "<leader>sr", function() Snacks.picker.resume() end, desc = "search [r]esume" },
+    { "<leader>s.", function() Snacks.picker.recent() end, desc = "search [.] Recent Files" },
+    { "<leader>sc", function() Snacks.picker.git_log_file() end, desc = "search [c]ommits (file)" },
     { "<leader><leader>", function() Snacks.picker.buffers() end, desc = "[ ] Find buffers" },
     { "<leader>/", function() Snacks.picker.lines() end, desc = "[/] Fuzzily search in buffer" },
-    { "<leader>s/", function() Snacks.picker.grep_buffers() end, desc = "[S]earch [/] in open files" },
+    { "<leader>s/", function() Snacks.picker.grep_buffers() end, desc = "search [/] in open files" },
     {
       "<leader>sn",
       function() Snacks.picker.files { cwd = vim.fn.stdpath "config" } end,
-      desc = "[S]earch [N]eovim files",
+      desc = "search [n]eovim files",
     },
     -- Git
-    { "<leader>gb", function() Snacks.picker.git_branches() end, desc = "[G]it [B]ranches" },
+    { "<leader>sb", function() Snacks.picker.git_branches() end, desc = "search git [b]ranches" },
     -- Notifications
-    { "<leader>sN", function() Snacks.notifier.show_history() end, desc = "[S]earch [N]otifications" },
-    { "<leader>un", function() Snacks.notifier.hide() end, desc = "Dismiss all notifications" },
+    { "<leader>sN", function() Snacks.notifier.show_history() end, desc = "search [N]otifications" },
+    { "<leader>un", function() Snacks.notifier.hide() end, desc = "Dismiss all [n]otifications" },
+    -- Terminal
+    { "<C-/>", function() Snacks.terminal.toggle() end, desc = "Open terminal" },
   },
 }
