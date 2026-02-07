@@ -85,6 +85,14 @@ return {
       "AndreM222/copilot-lualine",
     },
     config = function()
+      local function disabled_indicators()
+        local indicators = {}
+        if vim.g.disable_autoformat then table.insert(indicators, "󰉩 FMT") end
+        if vim.g.disable_lint then table.insert(indicators, "󰛄 LINT") end
+        if #indicators > 0 then return table.concat(indicators, " ") end
+        return ""
+      end
+
       require("lualine").setup {
         options = {
           theme = "auto",
@@ -95,7 +103,13 @@ return {
           lualine_a = { "mode" },
           lualine_b = { "branch", "diff", "diagnostics" },
           lualine_c = { "filename" },
-          lualine_x = { "copilot", "encoding", "fileformat", "filetype" },
+          lualine_x = {
+            { disabled_indicators, color = { fg = "#ff9e64" } },
+            "copilot",
+            "encoding",
+            "fileformat",
+            "filetype",
+          },
           lualine_y = { "progress" },
         },
       }

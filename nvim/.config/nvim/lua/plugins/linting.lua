@@ -3,22 +3,7 @@ local tools = require "config.tools"
 return {
   "mfussenegger/nvim-lint",
   event = { "BufReadPre", "BufNewFile" },
-  keys = {
-    {
-      "<leader>tl",
-      function()
-        vim.g.disable_lint = not vim.g.disable_lint
-        if vim.g.disable_lint then
-          vim.notify("Linting disabled", vim.log.levels.INFO)
-          vim.diagnostic.reset()
-        else
-          vim.notify("Linting enabled", vim.log.levels.INFO)
-          require("lint").try_lint()
-        end
-      end,
-      desc = "toggle [l]inting",
-    },
-  },
+
   config = function()
     local lint = require "lint"
     lint.linters_by_ft = tools.linters or {}
