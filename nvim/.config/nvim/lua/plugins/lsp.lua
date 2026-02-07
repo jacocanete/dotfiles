@@ -118,11 +118,7 @@ return {
           ---@param bufnr? integer some lsp support methods only in specific files
           ---@return boolean
           local function client_supports_method(client, method, bufnr)
-            if vim.fn.has "nvim-0.11" == 1 then
-              return client:supports_method(method, bufnr)
-            else
-              return client.supports_method(method, { bufnr = bufnr })
-            end
+            return client:supports_method(method, bufnr)
           end
 
           -- The following two autocommands are used to highlight references of the
@@ -191,15 +187,6 @@ return {
         virtual_text = {
           source = "if_many",
           spacing = 2,
-          format = function(diagnostic)
-            local diagnostic_message = {
-              [vim.diagnostic.severity.ERROR] = diagnostic.message,
-              [vim.diagnostic.severity.WARN] = diagnostic.message,
-              [vim.diagnostic.severity.INFO] = diagnostic.message,
-              [vim.diagnostic.severity.HINT] = diagnostic.message,
-            }
-            return diagnostic_message[diagnostic.severity]
-          end,
         },
       }
 
@@ -246,12 +233,7 @@ return {
       vim.list_extend(ensure_installed, tools_needed)
       vim.list_extend(ensure_installed, tools.additional_tools)
 
-      -- Filter out servers that have different Mason package names
-      ensure_installed = vim.tbl_filter(function(name)
-        return name ~= "volar"
-      end, ensure_installed)
-
-      -- Will deduplicate the list interally (probably)
+      -- Will deduplicate the list internally (probably)
       require("mason-tool-installer").setup { ensure_installed = ensure_installed }
 
       -- Setup mason-lspconfig
@@ -273,5 +255,6 @@ return {
   },
   {
     "mfussenegger/nvim-jdtls",
+    ft = "java",
   },
 }

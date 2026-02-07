@@ -140,6 +140,13 @@ return {
         documentRangeFormattingProvider = false,
       },
       filetypes = { "scss", "sass" },
+      settings = {
+        somesass = {
+          workspace = {
+            loadPaths = { ".", "src/css" },
+          },
+        },
+      },
     },
     stylelint_lsp = {
       settings = {
@@ -228,5 +235,6 @@ return {
     "scss",
     "php",
     "python",
+    "regex",
   },
 }

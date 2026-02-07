@@ -42,3 +42,16 @@ vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper win
 
 -- Turn off signature help
 vim.keymap.set("i", "<c-s>", function() end, { desc = "Disabled" })
+
+-- Move selected lines up/down in visual mode
+vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
+vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
+
+-- Keep cursor centered during navigation
+vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half-page down (centered)" })
+vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half-page up (centered)" })
+vim.keymap.set("n", "n", "nzzzv", { desc = "Next search result (centered)" })
+vim.keymap.set("n", "N", "Nzzzv", { desc = "Previous search result (centered)" })
+
+-- Paste over selection without losing register
+vim.keymap.set("x", "<leader>p", [["_dP]], { desc = "[p]aste without losing register" })
