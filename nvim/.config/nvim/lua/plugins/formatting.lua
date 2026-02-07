@@ -8,11 +8,9 @@ return {
   keys = {
     {
       "<leader>f",
-      function()
-        require("conform").format { async = true, lsp_format = "fallback" }
-      end,
+      function() require("conform").format { async = true, lsp_format = "fallback" } end,
       mode = "",
-      desc = "[F]ormat buffer",
+      desc = "[f]ormat buffer",
     },
     {
       "<leader>tf",
@@ -25,24 +23,20 @@ return {
         end
       end,
       mode = "",
-      desc = "[T]oggle auto[F]ormat",
+      desc = "toggle auto[f]ormat",
     },
   },
   opts = {
     notify_on_error = false,
     format_on_save = function(bufnr)
       -- Check if formatting is globally disabled
-      if vim.g.disable_autoformat then
-        return nil
-      end
+      if vim.g.disable_autoformat then return nil end
 
       -- Disable "format_on_save lsp_fallback" for languages that don't
       -- have a well standardized coding style. You can add additional
       -- languages here or re-enable it for the disabled ones.
       local disable_filetypes = { c = true, cpp = true }
-      if disable_filetypes[vim.bo[bufnr].filetype] then
-        return nil
-      end
+      if disable_filetypes[vim.bo[bufnr].filetype] then return nil end
 
       local filename = vim.api.nvim_buf_get_name(bufnr)
       local is_deno_project = tools.is_deno_project(filename)

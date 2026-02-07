@@ -60,7 +60,7 @@ return {
       {
         "<leader>tu",
         vim.cmd.UndotreeToggle,
-        desc = "[T]oggle [u]ndotree",
+        desc = "[t]oggle [u]ndotree",
       },
     },
   },
