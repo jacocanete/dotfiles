@@ -40,6 +40,7 @@ require("lazy").setup({
   { import = "plugins.markdown" },
   { import = "plugins.fugitive" },
   { import = "plugins.opencode" },
+  { import = "plugins.noice" },
 
   -- Import kickstart plugins
   require "kickstart.plugins.debug",

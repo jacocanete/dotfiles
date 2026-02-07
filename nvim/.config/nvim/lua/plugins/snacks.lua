@@ -8,6 +8,7 @@ return {
     notifier = { enabled = true },
     input = { enabled = true },
     renamer = { enabled = true },
+    terminal = { enabled = true },
   },
   keys = {
     -- Search
@@ -34,5 +35,7 @@ return {
     -- Notifications
     { "<leader>sN", function() Snacks.notifier.show_history() end, desc = "search [N]otifications" },
     { "<leader>un", function() Snacks.notifier.hide() end, desc = "Dismiss all [n]otifications" },
+    -- Terminal
+    { "<leader>t", function() Snacks.terminal.toggle() end, desc = "open [t]erminal" },
   },
 }

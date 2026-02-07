@@ -16,20 +16,19 @@ return {
       { desc = "Opencode ask" }
     )
     vim.keymap.set({ "n", "x" }, "<C-x>", function() require("opencode").select() end, { desc = "Opencode select" })
-    vim.keymap.set({ "n", "t" }, "<C-/>", function() require("opencode").toggle() end, { desc = "Opencode terminal" })
 
-    vim.keymap.set(
-      "n",
-      "<S-C-u>",
-      function() require("opencode").command "session.half.page.up" end,
-      { desc = "Scroll opencode up" }
-    )
-    vim.keymap.set(
-      "n",
-      "<S-C-d>",
-      function() require("opencode").command "session.half.page.down" end,
-      { desc = "Scroll opencode down" }
-    )
+    -- vim.keymap.set(
+    --   "n",
+    --   "<S-C-u>",
+    --   function() require("opencode").command "session.half.page.up" end,
+    --   { desc = "Scroll opencode up" }
+    -- )
+    -- vim.keymap.set(
+    --   "n",
+    --   "<S-C-d>",
+    --   function() require("opencode").command "session.half.page.down" end,
+    --   { desc = "Scroll opencode down" }
+    -- )
 
     vim.keymap.set(
       { "n", "x" },

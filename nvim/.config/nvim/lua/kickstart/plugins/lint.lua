@@ -18,7 +18,7 @@ return {
             require("lint").try_lint()
           end
         end,
-        desc = "[T]oggle [L]inting",
+        desc = "[t]oggle [l]inting",
       },
     },
     config = function()
