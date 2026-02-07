@@ -12,19 +12,7 @@ return {
       mode = "",
       desc = "[f]ormat buffer",
     },
-    {
-      "<leader>tf",
-      function()
-        vim.g.disable_autoformat = not vim.g.disable_autoformat
-        if vim.g.disable_autoformat then
-          vim.notify("Autoformat disabled", vim.log.levels.INFO)
-        else
-          vim.notify("Autoformat enabled", vim.log.levels.INFO)
-        end
-      end,
-      mode = "",
-      desc = "toggle auto[f]ormat",
-    },
+
   },
   opts = {
     notify_on_error = false,

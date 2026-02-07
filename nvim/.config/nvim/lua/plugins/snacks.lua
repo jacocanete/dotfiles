@@ -9,7 +9,39 @@ return {
     input = { enabled = true },
     renamer = { enabled = true },
     terminal = { enabled = true },
+    toggle = { enabled = true },
   },
+  init = function()
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "VeryLazy",
+      callback = function()
+        Snacks.toggle({
+          name = "Auto Format",
+          get = function() return not vim.g.disable_autoformat end,
+          set = function(state) vim.g.disable_autoformat = not state end,
+        }):map "<leader>tf"
+
+        Snacks.toggle({
+          name = "Linting",
+          get = function() return not vim.g.disable_lint end,
+          set = function(state)
+            vim.g.disable_lint = not state
+            if not state then
+              vim.diagnostic.reset()
+            else
+              require("lint").try_lint()
+            end
+          end,
+        }):map "<leader>tl"
+
+        Snacks.toggle.diagnostics():map "<leader>td"
+        Snacks.toggle.inlay_hints():map "<leader>th"
+        Snacks.toggle.treesitter():map "<leader>tT"
+        Snacks.toggle.option("relativenumber", { name = "Relative Number" }):map "<leader>tn"
+        Snacks.toggle.option("wrap", { name = "Word Wrap" }):map "<leader>tw"
+      end,
+    })
+  end,
   keys = {
     -- Search
     { "<leader>sh", function() Snacks.picker.help() end, desc = "search [h]elp" },
