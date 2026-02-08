@@ -105,6 +105,13 @@ return {
           lualine_c = { "filename" },
           lualine_x = {
             { disabled_indicators, color = { fg = "#ff9e64" } },
+            {
+              function()
+                local ok, opencode = pcall(require, "opencode")
+                if ok and opencode.statusline then return opencode.statusline() end
+                return ""
+              end,
+            },
             "copilot",
             "encoding",
             "fileformat",
