@@ -68,6 +68,15 @@ return {
     { "<leader>sN", function() Snacks.notifier.show_history() end, desc = "search [N]otifications" },
     { "<leader>un", function() Snacks.notifier.hide() end, desc = "Dismiss all [n]otifications" },
     -- Terminal
-    { "<C-/>", function() Snacks.terminal.toggle() end, desc = "Open terminal" },
+    { "<C-/>", function() Snacks.terminal.toggle() end, desc = "Open terminal", mode = { "n", "t" } },
+    {
+      "<leader>ut",
+      function()
+        for _, t in ipairs(Snacks.terminal.list()) do
+          t:hide()
+        end
+      end,
+      desc = "Dismiss all [t]erminals",
+    },
   },
 }

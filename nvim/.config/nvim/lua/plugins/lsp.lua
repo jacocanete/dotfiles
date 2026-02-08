@@ -117,9 +117,7 @@ return {
           ---@param method vim.lsp.protocol.Method
           ---@param bufnr? integer some lsp support methods only in specific files
           ---@return boolean
-          local function client_supports_method(client, method, bufnr)
-            return client:supports_method(method, bufnr)
-          end
+          local function client_supports_method(client, method, bufnr) return client:supports_method(method, bufnr) end
 
           -- The following two autocommands are used to highlight references of the
           -- word under your cursor when your cursor rests there for a little while.
@@ -155,8 +153,6 @@ return {
               end,
             })
           end
-
-
         end,
       })
 
