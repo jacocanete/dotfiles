@@ -72,22 +72,6 @@ return {
       filetypes = {
         "php",
       },
-      -- root_dir = function(fname)
-      -- 	local util = require("lspconfig.util")
-      --
-      -- 	-- Check if we're inside wp-content (themes, plugins, etc.)
-      -- 	if string.find(fname, "/wp-content/") then
-      -- 		-- Extract the site root (~/Local Sites/[wp-theme]/)
-      -- 		local site_root = string.match(fname, "(.*/Local Sites/[^/]+)")
-      -- 		if site_root then
-      -- 			return site_root
-      -- 		end
-      -- 	end -- Fall back to default root detection
-      -- 	local git_root = vim.fs.find(".git", { path = fname, upward = true })[1]
-      -- 	return util.root_pattern("composer.json", ".git", "wp-config.php")(fname)
-      -- 		or (git_root and vim.fs.dirname(git_root))
-      -- 		or vim.fs.dirname(fname)
-      -- end,
       settings = {
         intelephense = {
           files = {
@@ -209,12 +193,23 @@ return {
     },
   },
 
-  -- Additional tools (linters, debuggers, etc.)
-  -- List tools here that aren't automatically installed
-  -- Tools that are automatically installed are the ones from tools.lsp, tools.linters, and tools.formatters
-  additional_tools = {
+  -- Mason package names for LSP servers
+  -- These are the Mason registry names (not lspconfig names)
+  -- Run :Mason to see available packages
+  mason_servers = {
+    "deno",
     "typescript-language-server",
+    "intelephense",
+    "some-sass-language-server",
+    "stylelint-lsp",
+    "emmet-language-server",
+    "lua-language-server",
+    "jdtls",
+    "python-lsp-server",
   },
+
+  -- Additional tools (formatters, linters, debuggers, etc.)
+  additional_tools = {},
 
   -- Languages (used by nvim-treesitter)
   languages = {
