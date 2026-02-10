@@ -39,6 +39,19 @@ return {
         Snacks.toggle.treesitter():map "<leader>tT"
         Snacks.toggle.option("relativenumber", { name = "Relative Number" }):map "<leader>tn"
         Snacks.toggle.option("wrap", { name = "Word Wrap" }):map "<leader>tw"
+
+        Snacks.toggle({
+          name = "Copilot",
+          get = function() return not vim.g.copilot_disabled end,
+          set = function(state)
+            vim.g.copilot_disabled = not state
+            if state then
+              require("copilot.command").enable()
+            else
+              require("copilot.command").disable()
+            end
+          end,
+        }):map "<leader>tc"
       end,
     })
   end,

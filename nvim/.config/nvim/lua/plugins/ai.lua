@@ -14,13 +14,11 @@ return {
         },
       }
 
-      vim.keymap.set("i", "<Tab>", function()
+      vim.keymap.set("i", "<C-y>", function()
         if require("copilot.suggestion").is_visible() then
           require("copilot.suggestion").accept()
-        else
-          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, false, true), "n", false)
         end
-      end, { desc = "Accept Copilot suggestion or indent" })
+      end, { desc = "Accept Copilot suggestion" })
     end,
   },
 

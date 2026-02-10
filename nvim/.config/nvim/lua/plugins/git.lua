@@ -155,9 +155,18 @@ return {
         map("n", "<leader>hb", gitsigns.blame_line, { desc = "git [b]lame line" })
         map("n", "<leader>hd", gitsigns.diffthis, { desc = "git [d]iff against index" })
 
-        -- Toggles
-        map("n", "<leader>tb", gitsigns.toggle_current_line_blame, { desc = "[t]oggle git show [b]lame line" })
-        map("n", "<leader>tD", gitsigns.preview_hunk_inline, { desc = "[t]oggle git show [D]eleted" })
+        -- Toggles (using Snacks toggle for consistent UI)
+        Snacks.toggle({
+          name = "Git Blame Line",
+          get = function() return require("gitsigns.config").config.current_line_blame end,
+          set = function() gitsigns.toggle_current_line_blame() end,
+        }):map "<leader>tb"
+
+        Snacks.toggle({
+          name = "Git Show Deleted",
+          get = function() return require("gitsigns.config").config.show_deleted end,
+          set = function() gitsigns.toggle_deleted() end,
+        }):map "<leader>tD"
       end,
     },
   },
