@@ -148,6 +148,13 @@ return {
     opts = { signs = false },
   },
 
+  -- Discord Rich Presence
+  {
+    "IogaMaster/neocord",
+    event = "VeryLazy",
+    opts = {},
+  },
+
   -- Colorizer
   {
     "catgoose/nvim-colorizer.lua",

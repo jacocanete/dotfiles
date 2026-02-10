@@ -217,6 +217,7 @@ return {
     "c",
     "diff",
     "html",
+    "javascript",
     "lua",
     "luadoc",
     "markdown",

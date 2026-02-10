@@ -12,9 +12,28 @@ return {
 		},
 		config = function()
 			require("nvim-treesitter").install(tools.languages or {})
+
+			local parser_for_filetype = {
+				typescriptreact = "tsx",
+				javascriptreact = "javascript",
+				sh = "bash",
+			}
+
+			local filetypes = {}
+			for _, lang in ipairs(tools.languages or {}) do
+				filetypes[lang] = true
+			end
+			for ft, _ in pairs(parser_for_filetype) do
+				filetypes[ft] = true
+			end
+
 			vim.api.nvim_create_autocmd("FileType", {
-				pattern = tools.languages or {},
-				callback = function() vim.treesitter.start() end,
+				pattern = vim.tbl_keys(filetypes),
+				callback = function(args)
+					local ft = args.match
+					local lang = parser_for_filetype[ft] or ft
+					vim.treesitter.start(args.buf, lang)
+				end,
 			})
 		end,
 	},
