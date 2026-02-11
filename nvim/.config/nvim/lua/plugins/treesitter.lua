@@ -35,6 +35,16 @@ return {
 					vim.treesitter.start(args.buf, lang)
 				end,
 			})
+
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = "php",
+				callback = function(args)
+					vim.schedule(function()
+						vim.bo[args.buf].indentexpr = ""
+						vim.bo[args.buf].autoindent = true
+					end)
+				end,
+			})
 		end,
 	},
 

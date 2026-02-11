@@ -6,19 +6,10 @@ return {
     event = "InsertEnter",
     config = function()
       require("copilot").setup {
-        suggestion = {
-          auto_trigger = true,
-          keymap = {
-            accept = false,
-          },
-        },
+        copilot_node_command = vim.fn.expand "$HOME/.local/share/fnm/node-versions/v22.17.0/installation/bin/node",
+        suggestion = { enabled = false },
+        panel = { enabled = false },
       }
-
-      vim.keymap.set("i", "<C-y>", function()
-        if require("copilot.suggestion").is_visible() then
-          require("copilot.suggestion").accept()
-        end
-      end, { desc = "Accept Copilot suggestion" })
     end,
   },
 
