@@ -102,7 +102,17 @@ return {
         sections = {
           lualine_a = { "mode" },
           lualine_b = { "branch", "diff", "diagnostics" },
-          lualine_c = { "filename" },
+          lualine_c = {
+            {
+              function()
+                local dir = require("oil").get_current_dir()
+                if dir then return vim.fn.fnamemodify(dir, ":.") end
+                return ""
+              end,
+              cond = function() return vim.bo.filetype == "oil" end,
+            },
+            { "filename", path = 1, cond = function() return vim.bo.filetype ~= "oil" end },
+          },
           lualine_x = {
             { disabled_indicators, color = { fg = "#ff9e64" } },
             {

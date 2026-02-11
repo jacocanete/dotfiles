@@ -75,6 +75,36 @@ return {
       function() Snacks.picker.files { cwd = vim.fn.stdpath "config" } end,
       desc = "search [n]eovim files",
     },
+    -- Projects
+    {
+      "<leader>sp",
+      function()
+        local projects_dir = vim.fn.expand "~/Projects"
+        local items = {}
+        local handle = io.popen("find " .. projects_dir .. ' -maxdepth 3 -name ".git" -type d 2>/dev/null')
+        if handle then
+          for line in handle:lines() do
+            local dir = line:gsub("/.git$", "")
+            local name = dir:gsub(projects_dir .. "/", "")
+            table.insert(items, { text = name, file = dir })
+          end
+          handle:close()
+        end
+        Snacks.picker {
+          title = "Projects",
+          items = items,
+          format = "text",
+          confirm = function(picker, item)
+            picker:close()
+            if item then
+              vim.cmd.cd(item.file)
+              vim.notify("cd " .. item.file)
+            end
+          end,
+        }
+      end,
+      desc = "search [p]rojects",
+    },
     -- Git
     { "<leader>sb", function() Snacks.picker.git_branches() end, desc = "search git [b]ranches" },
     -- Notifications
