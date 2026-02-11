@@ -170,6 +170,18 @@ return {
         },
       },
     },
+    twiggy_language_server = {
+      filetypes = { "twig" },
+      settings = {
+        twiggy = {
+          framework = "craft",
+          phpExecutable = "php",
+          diagnostics = {
+            twigCsFixer = false,
+          },
+        },
+      },
+    },
     -- Java Language Server
     jdtls = {},
     -- Python Language Server
@@ -206,6 +218,7 @@ return {
     "lua-language-server",
     "jdtls",
     "python-lsp-server",
+    "twiggy-language-server",
   },
 
   -- Additional tools (formatters, linters, debuggers, etc.)
@@ -232,5 +245,6 @@ return {
     "php",
     "python",
     "regex",
+    "twig",
   },
 }
