@@ -193,3 +193,7 @@ export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
 export SSH_AUTH_SOCK=/home/jacocanete/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock
+
+[[ -f ~/.secrets ]] && source ~/.secrets
+
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
