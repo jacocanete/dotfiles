@@ -559,7 +559,7 @@ show_startup_tips false
 // show_release_notes false
 
 // Web server configuration
-// web_server true
+web_server true
 web_server_ip "10.121.15.18"
 web_server_port 8082
 web_server_cert "/home/jacocanete/.config/zellij/certs/zellij.pem"
