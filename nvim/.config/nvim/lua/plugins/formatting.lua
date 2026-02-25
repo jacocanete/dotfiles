@@ -12,7 +12,6 @@ return {
       mode = "",
       desc = "[f]ormat buffer",
     },
-
   },
   opts = {
     notify_on_error = false,
@@ -46,5 +45,10 @@ return {
       }
     end,
     formatters_by_ft = tools.formatters or {},
+    formatters = {
+      phpcbf = {
+        cwd = function() return vim.fs.root(0, { "phpcs.xml", "phpcs.xml.dist" }) end,
+      },
+    },
   },
 }

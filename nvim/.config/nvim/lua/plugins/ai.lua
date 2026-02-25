@@ -4,14 +4,13 @@ return {
     "zbirenbaum/copilot.lua",
     cmd = "Copilot",
     event = "InsertEnter",
-    opts = {
-      suggestion = {
-        auto_trigger = true,
-        keymap = {
-          accept = "<Tab>",
-        },
-      },
-    },
+    config = function()
+      require("copilot").setup {
+        copilot_node_command = vim.fn.expand "$HOME/.local/share/fnm/node-versions/v22.17.0/installation/bin/node",
+        suggestion = { enabled = false },
+        panel = { enabled = false },
+      }
+    end,
   },
 
   -- Opencode: AI coding assistant

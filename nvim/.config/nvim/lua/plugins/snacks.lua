@@ -39,6 +39,19 @@ return {
         Snacks.toggle.treesitter():map "<leader>tT"
         Snacks.toggle.option("relativenumber", { name = "Relative Number" }):map "<leader>tn"
         Snacks.toggle.option("wrap", { name = "Word Wrap" }):map "<leader>tw"
+
+        Snacks.toggle({
+          name = "Copilot",
+          get = function() return not vim.g.copilot_disabled end,
+          set = function(state)
+            vim.g.copilot_disabled = not state
+            if state then
+              require("copilot.command").enable()
+            else
+              require("copilot.command").disable()
+            end
+          end,
+        }):map "<leader>tc"
       end,
     })
   end,
@@ -62,12 +75,51 @@ return {
       function() Snacks.picker.files { cwd = vim.fn.stdpath "config" } end,
       desc = "search [n]eovim files",
     },
+    -- Projects
+    {
+      "<leader>sp",
+      function()
+        local projects_dir = vim.fn.expand "~/Projects"
+        local items = {}
+        local handle = io.popen("find " .. projects_dir .. ' -maxdepth 3 -name ".git" -type d 2>/dev/null')
+        if handle then
+          for line in handle:lines() do
+            local dir = line:gsub("/.git$", "")
+            local name = dir:gsub(projects_dir .. "/", "")
+            table.insert(items, { text = name, file = dir })
+          end
+          handle:close()
+        end
+        Snacks.picker {
+          title = "Projects",
+          items = items,
+          format = "text",
+          confirm = function(picker, item)
+            picker:close()
+            if item then
+              vim.cmd.cd(item.file)
+              vim.notify("cd " .. item.file)
+            end
+          end,
+        }
+      end,
+      desc = "search [p]rojects",
+    },
     -- Git
     { "<leader>sb", function() Snacks.picker.git_branches() end, desc = "search git [b]ranches" },
     -- Notifications
     { "<leader>sN", function() Snacks.notifier.show_history() end, desc = "search [N]otifications" },
     { "<leader>un", function() Snacks.notifier.hide() end, desc = "Dismiss all [n]otifications" },
     -- Terminal
-    { "<C-/>", function() Snacks.terminal.toggle() end, desc = "Open terminal" },
+    { "<C-/>", function() Snacks.terminal.toggle() end, desc = "Open terminal", mode = { "n", "t" } },
+    {
+      "<leader>ut",
+      function()
+        for _, t in ipairs(Snacks.terminal.list()) do
+          t:hide()
+        end
+      end,
+      desc = "Dismiss all [t]erminals",
+    },
   },
 }

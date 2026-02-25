@@ -5,7 +5,6 @@ return {
     "nvim-neotest/nvim-nio",
     "mason-org/mason.nvim",
     "jay-babu/mason-nvim-dap.nvim",
-
   },
   keys = {
     { "<F5>", function() require("dap").continue() end, desc = "Debug: Start/Continue" },

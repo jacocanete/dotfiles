@@ -5,55 +5,47 @@ local tools = require("config.tools")
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
+		branch = "main",
 		build = ":TSUpdate",
 		dependencies = {
-			"nvim-treesitter/nvim-treesitter-textobjects",
+			{ "nvim-treesitter/nvim-treesitter-textobjects", branch = "main" },
 		},
-		main = "nvim-treesitter.configs", -- Sets main module to use for opts
-		-- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-		opts = {
-			ensure_installed = tools.languages or {},
-			auto_install = true,
-			highlight = {
-				enable = true,
-				additional_vim_regex_highlighting = { "php", "ruby" },
-			},
-			indent = { enable = true, disable = { "ruby" } },
-			textobjects = {
-				select = {
-					enable = true,
-					lookahead = true,
-					keymaps = {
-						["af"] = "@function.outer",
-						["if"] = "@function.inner",
-						["ac"] = "@class.outer",
-						["ic"] = "@class.inner",
-						["ab"] = "@block.outer",
-						["ib"] = "@block.inner",
-					},
-				},
-				move = {
-					enable = true,
-					set_jumps = true,
-					goto_next_start = {
-						["]f"] = "@function.outer",
-						["]c"] = "@class.outer",
-					},
-					goto_next_end = {
-						["]F"] = "@function.outer",
-						["]C"] = "@class.outer",
-					},
-					goto_previous_start = {
-						["[f"] = "@function.outer",
-						["[c"] = "@class.outer",
-					},
-					goto_previous_end = {
-						["[F"] = "@function.outer",
-						["[C"] = "@class.outer",
-					},
-				},
-			},
-		},
+		config = function()
+			require("nvim-treesitter").install(tools.languages or {})
+
+			local parser_for_filetype = {
+				typescriptreact = "tsx",
+				javascriptreact = "javascript",
+				sh = "bash",
+			}
+
+			local filetypes = {}
+			for _, lang in ipairs(tools.languages or {}) do
+				filetypes[lang] = true
+			end
+			for ft, _ in pairs(parser_for_filetype) do
+				filetypes[ft] = true
+			end
+
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = vim.tbl_keys(filetypes),
+				callback = function(args)
+					local ft = args.match
+					local lang = parser_for_filetype[ft] or ft
+					vim.treesitter.start(args.buf, lang)
+				end,
+			})
+
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = "php",
+				callback = function(args)
+					vim.schedule(function()
+						vim.bo[args.buf].indentexpr = ""
+						vim.bo[args.buf].autoindent = true
+					end)
+				end,
+			})
+		end,
 	},
 
 	{
