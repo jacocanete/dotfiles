@@ -23,7 +23,6 @@ return {
         "mason-org/mason.nvim",
         opts = {},
       },
-      "mason-org/mason-lspconfig.nvim",
       "WhoIsSethDaniel/mason-tool-installer.nvim",
 
       -- Useful status updates for LSP.
@@ -112,25 +111,13 @@ return {
           -- the definition of its *type*, not where it was *defined*.
           map("grt", function() Snacks.picker.lsp_type_definitions() end, "[t]ype definition")
 
-          -- This function resolves a difference between neovim nightly (version 0.11) and stable (version 0.10)
-          ---@param client vim.lsp.Client
-          ---@param method vim.lsp.protocol.Method
-          ---@param bufnr? integer some lsp support methods only in specific files
-          ---@return boolean
-          local function client_supports_method(client, method, bufnr)
-            return client:supports_method(method, bufnr)
-          end
-
           -- The following two autocommands are used to highlight references of the
           -- word under your cursor when your cursor rests there for a little while.
           -- See `:help CursorHold` for information about when this is executed
           --
           -- When you move your cursor, the highlights will be cleared (the second autocommand).
           local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if
-            client
-            and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf)
-          then
+          if client and client:supports_method("textDocument/documentHighlight", event.buf) then
             local highlight_augroup = vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
             vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
               buffer = event.buf,
@@ -155,30 +142,8 @@ return {
               end,
             })
           end
-
-
         end,
       })
-
-      -- Diagnostic Config
-      -- See :help vim.diagnostic.Opts
-      vim.diagnostic.config {
-        severity_sort = true,
-        float = { border = "rounded", source = "if_many" },
-        underline = { severity = vim.diagnostic.severity.ERROR },
-        signs = vim.g.have_nerd_font and {
-          text = {
-            [vim.diagnostic.severity.ERROR] = "󰅚 ",
-            [vim.diagnostic.severity.WARN] = "󰀪 ",
-            [vim.diagnostic.severity.INFO] = "󰋽 ",
-            [vim.diagnostic.severity.HINT] = "󰌶 ",
-          },
-        } or {},
-        virtual_text = {
-          source = "if_many",
-          spacing = 2,
-        },
-      }
 
       -- LSP servers and clients are able to communicate to each other what features they support.
       -- By default, Neovim doesn't support everything that is in the LSP specification.
@@ -218,19 +183,16 @@ return {
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
 
-      local ensure_installed = vim.tbl_keys(tools.servers or {})
+      local ensure_installed = vim.list_extend({}, tools.mason_servers or {})
 
       vim.list_extend(ensure_installed, tools_needed)
       vim.list_extend(ensure_installed, tools.additional_tools)
 
-      -- Will deduplicate the list internally (probably)
-      require("mason-tool-installer").setup { ensure_installed = ensure_installed }
-
-      -- Setup mason-lspconfig
-      require("mason-lspconfig").setup {
-        ensure_installed = {},
-        automatic_enable = {},
-        automatic_installation = false,
+      require("mason-tool-installer").setup {
+        ensure_installed = ensure_installed,
+        integrations = {
+          ["mason-lspconfig"] = false,
+        },
       }
 
       -- Setup LSP servers using vim.lsp.config (Neovim 0.11+)
