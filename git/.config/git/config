@@ -40,7 +40,7 @@
 [status]
 	branch = true
 	showStash = true
-	showUntrackedFiles = true
+	showUntrackedFiles = all
 
 [init]
 	defaultBranch = main
