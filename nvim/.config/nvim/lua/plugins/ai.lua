@@ -6,7 +6,7 @@ return {
     event = "InsertEnter",
     config = function()
       require("copilot").setup {
-        copilot_node_command = vim.fn.expand "$HOME/.local/share/fnm/node-versions/v22.17.0/installation/bin/node",
+        copilot_node_command = vim.fn.exepath "node",
         suggestion = { enabled = false },
         panel = { enabled = false },
       }

@@ -107,6 +107,54 @@ return {
     },
     -- Git
     { "<leader>sb", function() Snacks.picker.git_branches() end, desc = "search git [b]ranches" },
+    {
+      "<leader>gt",
+      function()
+        local lines = vim.fn.systemlist "git worktree list --porcelain"
+        if vim.v.shell_error ~= 0 then
+          vim.notify("not in a git repository", vim.log.levels.WARN)
+          return
+        end
+
+        local items = {}
+        local path, label
+        local function flush()
+          if not path then return end
+          table.insert(items, {
+            text = (label or "(detached)") .. "  " .. vim.fn.fnamemodify(path, ":~"),
+            file = path,
+          })
+          path, label = nil, nil
+        end
+
+        for _, line in ipairs(lines) do
+          local wt = line:match "^worktree (.+)$"
+          if wt then
+            flush()
+            path = wt
+          elseif line:match "^branch " then
+            label = line:gsub("^branch refs/heads/", "")
+          elseif line == "bare" then
+            label = "(bare)"
+          end
+        end
+        flush()
+
+        Snacks.picker {
+          title = "Worktrees",
+          items = items,
+          format = "text",
+          confirm = function(picker, item)
+            picker:close()
+            if item then
+              vim.cmd.cd(item.file)
+              vim.notify("cd " .. item.file)
+            end
+          end,
+        }
+      end,
+      desc = "git wor[t]rees",
+    },
     -- Notifications
     { "<leader>sN", function() Snacks.notifier.show_history() end, desc = "search [N]otifications" },
     { "<leader>un", function() Snacks.notifier.hide() end, desc = "Dismiss all [n]otifications" },

@@ -55,7 +55,7 @@ layout {
     swap_floating_layout {
         floating_panes {
             pane {
-                x "60%"
+                x "50%"
                 y 0
                 width "40%"
                 height "100%"

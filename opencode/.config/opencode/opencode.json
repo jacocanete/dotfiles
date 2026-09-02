@@ -1,15 +1,15 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "theme": "tokyonight",
-  "mcp": {
-    "mgrep": {
-      "type": "local",
-      "command": [
-        "mgrep",
-        "mcp"
-      ],
-      "enabled": true
+  "agent": {
+    "build": {
+      "model": "openai/gpt-5.6-terra"
     },
+    "plan": {
+      "model": "openai/gpt-5.6-terra"
+    }
+  },
+  "plugin": [],
+  "mcp": {
     "figma": {
       "type": "local",
       "command": ["npx", "-y", "figma-developer-mcp", "--stdio"],
@@ -17,6 +17,11 @@
       "environment": {
         "FIGMA_API_KEY": "{env:FIGMA_API_KEY}"
       }
+    },
+    "context7": {
+      "type": "local",
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "enabled": true
     }
   }
 }

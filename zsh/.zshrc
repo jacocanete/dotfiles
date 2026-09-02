@@ -75,10 +75,9 @@ plugins=(
 	git
 	zsh-autosuggestions
   zsh-syntax-highlighting
-	history
 )
 
-source $ZSH/oh-my-zsh.sh
+[[ -r "$ZSH/oh-my-zsh.sh" ]] && source "$ZSH/oh-my-zsh.sh"
 
 # User configuration
 
@@ -113,24 +112,33 @@ alias xampp='xampp-manager-launcher.sh'
 
 # FNM Setup
 FNM_PATH="$HOME/.local/share/fnm"
-if [[ -d "$FNM_PATH" ]]; then
+if [[ -x "$FNM_PATH/fnm" ]]; then
   export PATH="$FNM_PATH:$PATH"
   eval "$(fnm env --use-on-cd)"
 fi
 
-# Zoxide Setup
-eval "$(zoxide init --cmd cd zsh)"
-
-
 # opencode
-export PATH=/home/jacocanete/.opencode/bin:$PATH
+export PATH="$HOME/.opencode/bin:$PATH"
 
-# Set up fzf key bindings and fuzzy completion
-source <(fzf --zsh)
+# Set up fzf key bindings and fuzzy completion when a line editor is active.
+if [[ -o zle && -t 0 && -t 1 ]]; then
+  if [[ -r /usr/share/doc/fzf/examples/completion.zsh ]]; then
+    source /usr/share/doc/fzf/examples/completion.zsh
+    source /usr/share/doc/fzf/examples/key-bindings.zsh
+  elif command -v fzf >/dev/null 2>&1; then
+    source <(fzf --zsh)
+  fi
+fi
 
 export EDITOR=nvim
 
-eval "$(zellij setup --generate-auto-start zsh)"
+if [[ -z "$ZELLIJ" && -z "$NO_ZELLIJ" ]] && command -v zellij >/dev/null 2>&1; then
+  if [[ "$HOST" == "home-dev" && -n "$SSH_TTY" ]]; then
+    exec zellij attach --create dev
+  else
+    eval "$(zellij setup --generate-auto-start zsh)"
+  fi
+fi
 
 export LOCALSITES=~/Local\ Sites
 
@@ -146,13 +154,13 @@ function y() {
 }
 
 # Yazi file manager hotkey
-bindkey -s '^E' 'y\n'
+[[ -o zle && -t 0 && -t 1 ]] && bindkey -s '^E' 'y\n'
 
 export PATH="$HOME/.cargo/bin:$PATH"
 
 export XDG_CONFIG_HOME="$HOME/.config"
 
-. "/home/jacocanete/.deno/env"
+[[ -r "$HOME/.deno/env" ]] && source "$HOME/.deno/env"
 export WINEESYNC=1
 export WINEFSYNC=1
 
@@ -182,18 +190,35 @@ if [[ -n $ZELLIJ ]]; then
     zellij_tab_name_update
 fi
 
-export DOCKER_HOST=unix:///run/docker.sock
-export PATH=/usr/local/cuda/bin:$PATH
+[[ -S /run/docker.sock ]] && export DOCKER_HOST=unix:///run/docker.sock
+[[ -d /usr/local/cuda/bin ]] && export PATH="/usr/local/cuda/bin:$PATH"
 
 # bun completions
-[ -s "/home/jacocanete/.bun/_bun" ] && source "/home/jacocanete/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
-export SSH_AUTH_SOCK=/home/jacocanete/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock
+[[ -S "$HOME/.bitwarden-ssh-agent.sock" ]] && export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
 
-[[ -f ~/.secrets ]] && source ~/.secrets
+[[ -f "$HOME/.secrets" ]] && source "$HOME/.secrets"
 
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
+[[ -x /home/linuxbrew/.linuxbrew/bin/brew ]] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
+
+# phpenv
+export PHPENV_ROOT="$HOME/.phpenv"
+if [[ -x "$PHPENV_ROOT/bin/phpenv" ]]; then
+  export PATH="$PHPENV_ROOT/bin:$PATH"
+  eval "$(phpenv init -)"
+fi
+
+# Zoxide Setup (must be initialized last so its hook sits at the end of the chain)
+command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init --cmd cd zsh)"
+
+# Android SDK (added for Loadout dev builds)
+export ANDROID_HOME="$HOME/Android/Sdk"
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+if [[ -d "$ANDROID_HOME" ]]; then
+  export PATH="$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator"
+fi
