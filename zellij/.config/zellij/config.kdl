@@ -124,6 +124,7 @@ keybinds clear-defaults=true {
             SwitchToMode "locked"
         }
         bind "d" { Detach; }
+        bind "f" { ToggleHostFullscreen; SwitchToMode "locked"; }
         bind "o" { SwitchToMode "normal"; }
         bind "p" {
             LaunchOrFocusPlugin "plugin-manager" {
@@ -139,6 +140,8 @@ keybinds clear-defaults=true {
             }
             SwitchToMode "locked"
         }
+        bind "[" { FocusGuestSession; SwitchToMode "locked"; }
+        bind "]" { FocusHostSession; SwitchToMode "locked"; }
     }
     shared_among "normal" "locked" {
         bind "Alt left" { MoveFocusOrTab "left"; }
@@ -422,6 +425,7 @@ default_layout "code"
 //   - false
 // 
 pane_frames true
+pane_frame_style "full"
  
 // When attaching to an existing session with other users,
 // should the session be mirrored (true)
@@ -552,6 +556,12 @@ support_kitty_keyboard_protocol true
 // Default: true
 // 
 show_startup_tips false
+
+// Route input into remote Zellij sessions automatically.
+nested_session_handling "descend"
+
+// Preserve the pre-0.45 mouse scroll behavior.
+scroll_mode_sync false
  
 // Whether to show release notes on first version run
 // Default: true

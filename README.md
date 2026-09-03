@@ -26,7 +26,7 @@ package-name/
 | zellij | Zellij terminal multiplexer |
 | mpd | Music Player Daemon |
 | rmpc | Rust MPD Client |
-| ssh | SSH client configuration |
+| ssh | SSH client configuration and development VM launcher |
 | localwp | Local WP desktop entry |
 
 ## Usage
@@ -55,6 +55,18 @@ stow -D nvim
 ```bash
 stow -R nvim
 ```
+
+### Connect to the development VM
+
+After stowing the `ssh` package, start the VM if needed and connect with:
+
+```bash
+home-dev
+```
+
+Arguments are passed to SSH as a remote command, for example `home-dev uptime`.
+With Zellij 0.45.1 or newer, input automatically routes into the remote session.
+Press `Ctrl-g`, `o`, then `]` to return to the local session.
 
 ## Adding New Configurations
 

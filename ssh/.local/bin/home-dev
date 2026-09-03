@@ -1,0 +1,39 @@
+#!/bin/sh
+
+set -eu
+
+target=home-server-dev
+
+result=$(
+	ssh -o BatchMode=yes -o ConnectTimeout=5 home-server '
+		state=$(LC_ALL=C virsh -c qemu:///system domstate home-dev 2>/dev/null) || exit 1
+		if [ "$state" = "running" ]; then
+			printf "%s\n" running
+		elif virsh -c qemu:///system start home-dev >/dev/null 2>&1; then
+			printf "%s\n" started
+		elif [ "$(LC_ALL=C virsh -c qemu:///system domstate home-dev 2>/dev/null)" = "running" ]; then
+			printf "%s\n" running
+		else
+			exit 1
+		fi
+	'
+) || {
+	printf '%s\n' "home-dev: could not start the VM" >&2
+	exit 1
+}
+
+if [ "$result" = "started" ]; then
+	printf '%s\n' "home-dev: VM started; waiting for SSH"
+fi
+
+attempt=0
+while [ "$attempt" -lt 45 ]; do
+	if ssh -o BatchMode=yes -o ConnectTimeout=3 "$target" true 2>/dev/null; then
+		exec ssh "$target" "$@"
+	fi
+	attempt=$((attempt + 1))
+	sleep 1
+done
+
+printf '%s\n' "home-dev: SSH did not become ready" >&2
+exit 1
