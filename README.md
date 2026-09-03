@@ -93,7 +93,7 @@ Docker-published ports, which otherwise bypass UFW's normal input rules.
 `home-server-dev-recovery` reaches the private libvirt address through the host.
 The VM's ED25519 host-key fingerprint is
 `SHA256:CkqO/QT55NR8mecAjkSAcOEwJE3qXmWUTqyym7oBda0`.
-The guest keeps its own regular `~/.ssh/config` for its dedicated GitHub key;
+The guest keeps its own regular `~/.ssh/config` for its dedicated GitHub keys;
 do not replace it with the workstation SSH configuration.
 
 #### Rebuild guest network access
@@ -162,6 +162,50 @@ domains must end in `.local`; for example, map
 `10.121.16.20 example.home-dev.local` in the client's `/etc/hosts`. On Linux,
 review and run the `setcap` command Studio prints if its proxy needs permission
 to bind ports 80 and 443; do not run the entire `studio` command with `sudo`.
+
+### GitHub identities in `home-dev`
+
+The shared Git config rewrites short remote names while the guest's machine-local
+SSH config selects a dedicated key for each GitHub account:
+
+| Prefix | GitHub destination | Guest identity |
+|--------|--------------------|----------------|
+| `jc:` | `jacocanete/<repository>` | Personal VM key |
+| `di:` | `digitalimpulse/<repository>` | Work VM key |
+| `dd:` | `demanddrive/<repository>` | Work VM key |
+
+For example:
+
+```bash
+git clone jc:dotfiles ~/Projects/jacocanete/dotfiles
+git clone dd:wp-theme-demanddrive-gtm ~/Projects/digitalimpulse/wp-theme-demanddrive-gtm
+```
+
+Authentication follows the remote prefix, but commit identity follows the local
+path. Keep work repositories under `~/Projects/digitalimpulse/`; cloning a `dd:`
+remote elsewhere does not by itself select the work author or signing key.
+
+The guest uses `~/.ssh/home-dev-github-ed25519` for personal GitHub access and
+`~/.ssh/home-dev-work-github-ed25519` for work access. Both are guest-only,
+independently revocable keys. Never copy workstation or guest private keys to
+another machine. Register only each `.pub` file with its corresponding GitHub
+account as an authentication and signing key, including organization SSO when
+required.
+
+The machine-local `~/.config/git/local` selects the guest personal signing key.
+Its final conditional include loads `~/.config/git/digitalimpulse/local` for work
+repositories so that it overrides the shared workstation signing key. These
+files and the guest's `~/.ssh/config` intentionally remain outside the tracked
+dotfiles.
+
+Verify both identities with:
+
+```bash
+ssh -T personalgit
+ssh -T workgit
+git config user.email
+git config user.signingkey
+```
 
 ### WordPress Studio CLI
 

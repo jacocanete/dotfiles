@@ -27,3 +27,10 @@
 - WordPress Studio sites listen on localhost by default; use a Studio custom domain and map it to `10.121.16.20` on approved clients before claiming that a site is remotely reachable
 - Use `studio start --skip-browser` in the headless VM
 - Do not change ZeroTier, UFW, SSH routing, or public exposure without asking first
+
+## Git identities
+- Put personal repositories under `~/Projects/jacocanete/` and use `jc:<repository>` remotes
+- Put work repositories under `~/Projects/digitalimpulse/` and use `dd:<repository>` for DemandDrive or `di:<repository>` for Digital Impulse
+- Git commit identity is selected by repository path, while SSH authentication is selected by the remote alias
+- Before committing, verify `git config user.email` and `git config user.signingkey` match the repository identity
+- Do not copy, replace, print, or commit machine-local private SSH keys
