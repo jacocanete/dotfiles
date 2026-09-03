@@ -93,6 +93,8 @@ Docker-published ports, which otherwise bypass UFW's normal input rules.
 `home-server-dev-recovery` reaches the private libvirt address through the host.
 The VM's ED25519 host-key fingerprint is
 `SHA256:CkqO/QT55NR8mecAjkSAcOEwJE3qXmWUTqyym7oBda0`.
+The guest keeps its own regular `~/.ssh/config` for its dedicated GitHub key;
+do not replace it with the workstation SSH configuration.
 
 #### Rebuild guest network access
 
@@ -110,8 +112,8 @@ Authorize the new member in ZTNet, assign the guest `10.121.16.20`, and confirm
 that `sudo zerotier-cli listnetworks` reports `OK`. The current network interface
 is `ztazsqtda4`; substitute the reported interface name if it differs.
 
-After stowing the `ssh` package in the guest, configure UFW before running any
-browser-facing service:
+After pulling the dotfiles repository in the guest, configure UFW before
+running any browser-facing service:
 
 ```bash
 sudo apt install ufw
@@ -123,7 +125,7 @@ sudo ufw allow in on ztazsqtda4 from 10.121.16.127 comment 'ProBook via ZTNet'
 sudo ufw allow in on enp1s0 from 192.168.122.1 to any port 22 proto tcp comment 'libvirt host recovery SSH'
 sudo ufw route allow in on ztazsqtda4 from 10.121.16.18 comment 'desktop to containers'
 sudo ufw route allow in on ztazsqtda4 from 10.121.16.127 comment 'ProBook to containers'
-sudo install -o root -g root -m 0640 ~/.local/share/home-dev/ufw-after.rules /etc/ufw/after.rules
+sudo install -o root -g root -m 0640 ~/dotfiles/ssh/.local/share/home-dev/ufw-after.rules /etc/ufw/after.rules
 sudo ufw --force enable
 ```
 
