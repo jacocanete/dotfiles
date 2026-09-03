@@ -9,6 +9,20 @@
     }
   },
   "plugin": [],
+  "lsp": {
+    "css": {
+      "command": ["vscode-css-language-server", "--stdio"],
+      "extensions": [".css", ".scss", ".less"]
+    },
+    "html": {
+      "command": ["vscode-html-language-server", "--stdio"],
+      "extensions": [".html", ".htm"]
+    },
+    "json": {
+      "command": ["vscode-json-language-server", "--stdio"],
+      "extensions": [".json", ".jsonc"]
+    }
+  },
   "mcp": {
     "figma": {
       "type": "local",
