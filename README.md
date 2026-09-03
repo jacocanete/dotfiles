@@ -226,6 +226,31 @@ Use `studio stop --path ~/Projects/example` to stop a site. Do not confuse the
 `studio` command with the separate Local WP desktop application or with WP-CLI;
 Studio exposes WP-CLI through `studio wp`.
 
+### Yazi on Ubuntu
+
+Ubuntu 24.04 does not provide Yazi in its default repositories. Install the
+official stable repository after verifying its downloaded keyring is not empty:
+
+```bash
+curl -fL --retry 5 --retry-all-errors \
+  -o /tmp/yazi-keyring.gpg \
+  https://yazi-rs.github.io/builds/yazi-keyring.gpg
+test -s /tmp/yazi-keyring.gpg
+gpg --batch --show-keys --with-subkey-fingerprint /tmp/yazi-keyring.gpg
+sudo install -o root -g root -m 0644 /tmp/yazi-keyring.gpg /usr/share/keyrings/yazi-keyring.gpg
+printf '%s\n' 'deb [signed-by=/usr/share/keyrings/yazi-keyring.gpg] https://yazi-rs.github.io/builds/ stable main' \
+  | sudo tee /etc/apt/sources.list.d/yazi.list >/dev/null
+rm /tmp/yazi-keyring.gpg
+sudo apt update
+sudo apt install yazi
+stow --dir=~/dotfiles --target=~ --restow yazi
+```
+
+The expected primary key fingerprint is
+`B77B 412E 5B65 3539 B786 95DC 9243 8579 6056 0E6C`; its signing subkey ends
+in `3C761BB7F5D34304`. The stable package includes Yazi's media and document
+preview dependencies. Verify the binary and shared theme with `yazi --version`.
+
 ## Adding New Configurations
 
 ### For ~/.config applications
