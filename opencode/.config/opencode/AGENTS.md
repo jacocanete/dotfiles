@@ -19,6 +19,8 @@
 
 ## Development VM networking
 - Use `10.121.16.20` as the stable SSH and browser address for `home-dev`; ZTNet provides the same address at home and away
+- OpenCode Web runs as a systemd user service at `http://10.121.16.20:4096` and relies on ZTNet and UFW rather than HTTP Basic Auth
+- The phone at `10.121.16.132` can reach only OpenCode Web on TCP port 4096; do not broaden that rule for ordinary development servers
 - Bind browser-facing development servers to `0.0.0.0` or `10.121.16.20`, not only to `localhost`
 - Report browser URLs as `http://10.121.16.20:<port>` unless a project defines a hostname
 - Make browser-side frontend requests relative, such as `/api`, or proxy them through the frontend dev server; browser-side `localhost` refers to the client machine, not the VM

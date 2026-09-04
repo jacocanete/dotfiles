@@ -1,0 +1,15 @@
+[Unit]
+Description=OpenCode Web on home-dev
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Projects
+Environment=PATH=%h/.opencode/bin:%h/.local/share/fnm/aliases/default/bin:%h/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/usr/bin/zsh -c 'set -a; [[ ! -r %h/.secrets ]] || source %h/.secrets; unset OPENCODE_SERVER_USERNAME OPENCODE_SERVER_PASSWORD; exec %h/.opencode/bin/opencode serve --hostname 10.121.16.20 --port 4096'
+Restart=always
+RestartSec=5
+UMask=0077
+
+[Install]
+WantedBy=default.target

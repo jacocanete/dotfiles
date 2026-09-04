@@ -28,6 +28,7 @@ package-name/
 | rmpc | Rust MPD Client |
 | ssh | SSH client configuration and development VM launcher |
 | localwp | Local WP desktop entry |
+| opencode | OpenCode configuration, skills, and `home-dev` Web service |
 
 ## Usage
 
@@ -79,14 +80,16 @@ need to change on the home network.
 |--------|---------|---------|
 | Desktop | `10.121.16.18` | Approved development client |
 | ProBook | `10.121.16.127` | Approved future dotfiles client |
+| Phone | `10.121.16.132` | OpenCode Web client only |
 | `home-dev` | `10.121.16.20` | Stable SSH and browser endpoint |
 | `home-dev` | `192.168.122.10` | Libvirt recovery path through `home-server` |
 | `home-server` | `10.121.16.22` | Remote VM control path |
 | `home-server` | `192.168.1.5` | Home LAN VM control path |
 
 The guest firewall allows inbound traffic from the desktop and ProBook over
-ZTNet. It allows only SSH from the libvirt host and denies other inbound and
-routed traffic. The tracked `DOCKER-USER` rules apply the same source policy to
+ZTNet. The phone can reach only OpenCode Web on TCP port 4096. It allows only
+SSH from the libvirt host and denies other inbound and routed traffic. The
+tracked `DOCKER-USER` rules apply the desktop and ProBook source policy to
 Docker-published ports, which otherwise bypass UFW's normal input rules.
 
 `home-server-dev` connects directly to the VM over ZTNet.
@@ -122,6 +125,7 @@ sudo ufw default allow outgoing
 sudo ufw default deny routed
 sudo ufw allow in on ztazsqtda4 from 10.121.16.18 comment 'desktop via ZTNet'
 sudo ufw allow in on ztazsqtda4 from 10.121.16.127 comment 'ProBook via ZTNet'
+sudo ufw allow in on ztazsqtda4 from 10.121.16.132 to 10.121.16.20 port 4096 proto tcp comment 'phone to OpenCode web'
 sudo ufw allow in on enp1s0 from 192.168.122.1 to any port 22 proto tcp comment 'libvirt host recovery SSH'
 sudo ufw route allow in on ztazsqtda4 from 10.121.16.18 comment 'desktop to containers'
 sudo ufw route allow in on ztazsqtda4 from 10.121.16.127 comment 'ProBook to containers'
@@ -162,6 +166,47 @@ domains must end in `.local`; for example, map
 `10.121.16.20 example.home-dev.local` in the client's `/etc/hosts`. On Linux,
 review and run the `setcap` command Studio prints if its proxy needs permission
 to bind ports 80 and 443; do not run the entire `studio` command with `sudo`.
+
+### OpenCode Web on `home-dev`
+
+Open `http://10.121.16.20:4096` from the desktop, ProBook, or phone while the
+client is connected to `homelab-network`. The systemd user service starts with
+the VM and retries until the guest's ZeroTier address is ready. It binds only to
+`10.121.16.20`; do not change it to `0.0.0.0`, enable mDNS, or expose the port
+through a public proxy.
+
+This endpoint intentionally uses ZTNet and UFW instead of HTTP Basic Auth. An
+approved client can use OpenCode to read files and run commands as the guest
+user. The phone firewall rule is limited to TCP port 4096, while the desktop and
+ProBook retain broader development access.
+
+Deploy and enable the tracked service inside the guest:
+
+```bash
+stow --no-folding --restow --dir="$HOME/dotfiles" --target="$HOME" opencode
+sudo loginctl enable-linger "$USER"
+systemctl --user daemon-reload
+systemctl --user enable --now opencode-web.service
+```
+
+`--no-folding` keeps systemd's machine-local enablement link outside the
+dotfiles repository. The service adds the OpenCode and FNM paths, optionally
+loads the guest-only `~/.secrets` file for MCP credentials, and explicitly
+leaves OpenCode server authentication disabled.
+
+Inspect or restart it with:
+
+```bash
+systemctl --user status opencode-web.service
+journalctl --user-unit opencode-web.service
+systemctl --user restart opencode-web.service
+```
+
+Disable remote OpenCode access without changing the firewall rule with:
+
+```bash
+systemctl --user disable --now opencode-web.service
+```
 
 ### GitHub identities in `home-dev`
 
