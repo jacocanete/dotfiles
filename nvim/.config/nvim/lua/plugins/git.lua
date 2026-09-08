@@ -21,8 +21,8 @@ return {
               return
             end
 
-            if vim.fn.executable "claude" ~= 1 then
-              Snacks.notify.error("Claude CLI not found in PATH", { title = "AI Commit" })
+            if vim.fn.executable "opencode" ~= 1 then
+              Snacks.notify.error("OpenCode CLI not found in PATH", { title = "AI Commit" })
               return
             end
 
@@ -41,15 +41,32 @@ return {
               opts = function(notif) notif.icon = spinner[math.floor(vim.uv.hrtime() / (1e6 * 80)) % #spinner + 1] end,
             })
 
-            local claude_cmd =
-              [[{ git diff --staged --stat; git diff --staged | head -2000; } | claude -p 'Generate a concise git commit message for these staged changes. Output ONLY the raw commit message with no markdown, no code blocks, no backticks, no explanations. Use conventional commit format.' --model haiku --output-format text --strict-mcp-config --mcp-config $HOME/.config/claude/mcp-empty.json]]
+            local staged_diff = vim.fn.system "git diff --staged --stat; git diff --staged | head -2000"
+            if vim.v.shell_error ~= 0 then
+              Snacks.notify.error("Failed to read staged diff", { title = "AI Commit" })
+              return
+            end
+
+            local prompt =
+              "Generate a concise git commit message for these staged changes. Output ONLY the raw commit message with no markdown, no code blocks, no backticks, no explanations. Use conventional commit format.\n\n"
+                .. staged_diff
+
+            local opencode_cmd = "opencode run --format json " .. vim.fn.shellescape(prompt)
 
             local output = {}
 
-            ai_commit_job = vim.fn.jobstart(claude_cmd, {
+            ai_commit_job = vim.fn.jobstart(opencode_cmd, {
               stdout_buffered = true,
               on_stdout = function(_, data)
-                if data then output = data end
+                if not data then
+                  return
+                end
+
+                for _, line in ipairs(data) do
+                  if line and line ~= "" then
+                    table.insert(output, line)
+                  end
+                end
               end,
               on_exit = function(_, exit_code)
                 ai_commit_job = nil
@@ -60,9 +77,18 @@ return {
                   return
                 end
 
-                local commit_msg = table.concat(output, "\n")
-                if vim.trim(commit_msg) == "" then
-                  Snacks.notify.error("Empty response from Claude", { title = "AI Commit" })
+                local commit_msg_lines = {}
+
+                for _, line in ipairs(output) do
+                  local ok, event = pcall(vim.fn.json_decode, line)
+                  if ok and type(event) == "table" and event.type == "text" and type(event.text) == "string" then
+                    table.insert(commit_msg_lines, event.text)
+                  end
+                end
+
+                local commit_msg = vim.trim(table.concat(commit_msg_lines, "\n"))
+                if commit_msg == "" then
+                  Snacks.notify.error("Empty response from OpenCode", { title = "AI Commit" })
                   return
                 end
 
