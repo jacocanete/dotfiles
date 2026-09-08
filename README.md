@@ -69,6 +69,18 @@ Arguments are passed to SSH as a remote command, for example `home-dev uptime`.
 With Zellij 0.45.1 or newer, input automatically routes into the remote session.
 Press `Ctrl-g`, `o`, then `]` to return to the local session.
 
+Upload a local screenshot or other file to the guest with:
+
+```bash
+home-dev send /path/to/screenshot.png
+```
+
+The file is placed in `~/Uploads` on `home-dev`. The command prints its exact
+remote path and copies that path to the local clipboard when `wl-copy` is
+available. In the remote OpenCode TUI, paste the path with the terminal's
+`Ctrl+Shift+V` shortcut. OpenCode recognizes the pasted image path and adds it
+to the prompt as an attachment.
+
 ### Development VM network
 
 `home-dev` has its own address on the private `homelab-network`. Use
