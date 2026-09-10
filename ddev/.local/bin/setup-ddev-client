@@ -5,7 +5,7 @@ set -eu
 network_id=b6ad79b0c8703cd4
 dns_domain=dev.test
 dns_server=10.121.16.20
-test_host=star-engineering.dev.test
+test_host=wp-theme-star-engineer.dev.test
 ca_source=${DDEV_CA_SOURCE:-jacocanete@10.121.16.20:.local/share/mkcert/rootCA.pem}
 ca_fingerprint=3A:AA:06:90:55:C7:13:47:31:95:A3:93:21:0C:B8:40:C7:00:8C:14:88:C9:A3:BE:37:ED:8C:1C:5C:DA:47:98
 ca_target=/etc/pki/ca-trust/source/anchors/home-dev-ddev-rootCA.pem

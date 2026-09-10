@@ -172,9 +172,10 @@ Prefer relative `/api` requests and a frontend development proxy to a backend
 that can remain VM-local.
 
 DDEV sites use private wildcard DNS through `home-dev` and names under
-`dev.test`, such as `https://star-engineering.dev.test`. ZTNet distributes the
-`dev.test` search domain and `10.121.16.20` DNS server. Approved Fedora clients
-can install persistent split DNS and trust the DDEV certificate authority with:
+`dev.test`, such as `https://wp-theme-star-engineer.dev.test`. ZTNet distributes
+the `dev.test` search domain and `10.121.16.20` DNS server. Approved Fedora
+clients can install persistent split DNS and trust the DDEV certificate
+authority with:
 
 ```bash
 stow --dir="$HOME/dotfiles" --target="$HOME" ddev
@@ -277,10 +278,11 @@ git config user.signingkey
 
 WordPress development runs in DDEV on `home-dev`. The DDEV router binds to the
 VM's private interfaces on ports 80 and 443, while UFW restricts access to
-approved ZTNet clients. Project names automatically become `dev.test` domains.
+approved ZTNet clients. Project names automatically become `dev.test` domains;
+WordPress theme sites use the theme repository slug as the project name.
 
 ```bash
-cd ~/Projects/digitalimpulse/star-engineering-site
+cd ~/Sites/wp-theme-star-engineer
 ddev start
 ddev describe
 ddev wp plugin list
@@ -290,7 +292,7 @@ ddev snapshot
 The Star Engineering site is available at:
 
 ```text
-https://star-engineering.dev.test
+https://wp-theme-star-engineer.dev.test
 ```
 
 Keep browser-side requests relative and run WordPress commands through
