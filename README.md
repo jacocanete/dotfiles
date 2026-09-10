@@ -27,6 +27,7 @@ package-name/
 | mpd | Music Player Daemon |
 | rmpc | Rust MPD Client |
 | ssh | SSH client configuration and development VM launcher |
+| ddev | Private DNS and HTTPS trust setup for DDEV sites on `home-dev` |
 | localwp | Local WP desktop entry |
 | opencode | OpenCode configuration, skills, and `home-dev` Web service |
 
@@ -170,14 +171,22 @@ must not call a backend at `localhost`, because that resolves on the client.
 Prefer relative `/api` requests and a frontend development proxy to a backend
 that can remain VM-local.
 
-WordPress Studio sites listen on localhost by default. For direct browser access,
-give each site a custom domain through Studio's proxy and map that domain to
-`10.121.16.20` on each approved client. Use HTTP initially; HTTPS also requires
-trusting Studio's local certificate authority on each client. Studio custom
-domains must end in `.local`; for example, map
-`10.121.16.20 example.home-dev.local` in the client's `/etc/hosts`. On Linux,
-review and run the `setcap` command Studio prints if its proxy needs permission
-to bind ports 80 and 443; do not run the entire `studio` command with `sudo`.
+DDEV sites use private wildcard DNS through `home-dev` and names under
+`dev.test`, such as `https://star-engineering.dev.test`. ZTNet distributes the
+`dev.test` search domain and `10.121.16.20` DNS server. Approved Fedora clients
+can install persistent split DNS and trust the DDEV certificate authority with:
+
+```bash
+stow --dir="$HOME/dotfiles" --target="$HOME" ddev
+setup-ddev-client
+```
+
+The machine must already be authorized and online in `homelab-network`. The
+script exits with join instructions otherwise; it does not join or modify
+NetworkManager. It discovers the ZeroTier interface, enables managed DNS,
+installs a `systemd-resolved` split-DNS service, verifies the pinned DDEV CA
+fingerprint, updates Fedora's trust store, and tests the site. Normal internet
+DNS remains unchanged because only `~dev.test` is routed through `home-dev`.
 
 ### OpenCode Web on `home-dev`
 
@@ -264,24 +273,29 @@ git config user.email
 git config user.signingkey
 ```
 
-### WordPress Studio CLI
+### DDEV WordPress
 
-The VM uses Node.js 24 through FNM and pins WordPress Studio CLI 1.20.0. The
-package includes both site management and the early-access Studio Code agent.
+WordPress development runs in DDEV on `home-dev`. The DDEV router binds to the
+VM's private interfaces on ports 80 and 443, while UFW restricts access to
+approved ZTNet clients. Project names automatically become `dev.test` domains.
 
 ```bash
-npm install --global wp-studio@1.20.0
-studio --version
-studio create --path ~/Projects/example --name example --domain example.home-dev.local --skip-browser
-studio start --path ~/Projects/example --skip-browser
-studio wp plugin list --path ~/Projects/example
-studio code
+cd ~/Projects/digitalimpulse/star-engineering-site
+ddev start
+ddev describe
+ddev wp plugin list
+ddev snapshot
 ```
 
-Studio CLI requires Node.js 22 or newer and works best on Node.js 24 or newer.
-Use `studio stop --path ~/Projects/example` to stop a site. Do not confuse the
-`studio` command with the separate Local WP desktop application or with WP-CLI;
-Studio exposes WP-CLI through `studio wp`.
+The Star Engineering site is available at:
+
+```text
+https://star-engineering.dev.test
+```
+
+Keep browser-side requests relative and run WordPress commands through
+`ddev wp`. DDEV stores project configuration in `.ddev/` and database state in
+Docker volumes; use `ddev export-db` for portable database backups.
 
 ### Yazi on Ubuntu
 
