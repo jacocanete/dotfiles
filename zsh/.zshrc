@@ -120,6 +120,15 @@ fi
 # opencode
 export PATH="$HOME/.opencode/bin:$PATH"
 
+opencode() {
+  if (( $# == 0 )) && [[ "$PWD" == "$HOME" ]]; then
+    command opencode "$HOME/Projects/general"
+    return
+  fi
+
+  command opencode "$@"
+}
+
 # Set up fzf key bindings and fuzzy completion when a line editor is active.
 if [[ -o zle && -t 0 && -t 1 ]]; then
   if [[ -r /usr/share/doc/fzf/examples/completion.zsh ]]; then

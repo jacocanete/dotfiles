@@ -1,6 +1,6 @@
 ---
 name: ddev-wordpress
-description: DDEV and WordPress local development, site setup, wp-admin plugins, WP-CLI, WP Migrate, database imports, Studio migrations, snapshots, and dev.test access. Use when creating, migrating, running, debugging, or exposing a WordPress site with DDEV on home-dev.
+description: WordPress and DDEV local development on home-dev. Use whenever the user asks to create, install, migrate, import, run, repair, debug, test, or expose a WordPress or WP site locally, even if DDEV is not named. Trigger for wp-admin, WP-CLI, plugins, themes, Composer, databases or SQL dumps, WP Migrate, WordPress Studio migrations, snapshots, domain replacement, and dev.test access.
 ---
 
 # DDEV WordPress
@@ -116,6 +116,74 @@ Ensure the destination in the copied site is a directory rather than an
 external symlink, restart DDEV, and verify the mount with `docker inspect` and
 `ddev wp theme status`. Keep absolute host paths in a machine-local override
 unless the repository intentionally standardizes that path.
+
+### Theme Development Workflow
+
+Keep the disposable WordPress runtime under `~/Sites/<project-name>` and the
+theme Git repository under `~/Projects/digitalimpulse/<theme-repo>` for work or
+`~/Projects/jacocanete/<theme-repo>` for personal projects. Do not copy the
+theme into the runtime when the goal is live development.
+
+Mount the repository with a machine-local DDEV override such as
+`.ddev/docker-compose.theme.yaml`:
+
+```yaml
+services:
+  web:
+    volumes:
+      - /absolute/host/path/to/theme:/var/www/html/wp-content/themes/<theme-slug>
+```
+
+Before restarting DDEV, confirm the destination theme directory does not
+contain unrelated files. After restart, verify the source and destination with
+`docker inspect` and confirm WordPress recognizes the intended slug with
+`ddev wp theme status`.
+
+If the theme uses BrowserSync, create its ignored `.env` from the repository's
+sample and set the canonical DDEV URL:
+
+```dotenv
+APP_URL=https://<project-name>.dev.test
+NODE_ENV=development
+```
+
+Theme asset tooling intentionally runs on the host so the normal daily command
+works directly from the Git repository:
+
+```bash
+cd ~/Projects/digitalimpulse/<theme-repo>
+npm run dev
+```
+
+Do not wrap this daily command in `ddev exec`. BrowserSync proxies `APP_URL`
+while DDEV continues to serve WordPress and PHP. Check that BrowserSync's ports,
+normally 3000 and 3001, are free before starting it. Load the
+`home-dev-networking` skill before changing bind addresses, firewall rules, DNS,
+TLS, or remote client access.
+
+For first-time setup, verify the repository's Node engine and expected npm
+major before installing dependencies. Prefer `npm ci` so tracked manifests stay
+unchanged. If `npm ci` rejects an out-of-sync lockfile, stop and ask before
+running `npm install` or otherwise rewriting the lockfile. Install Composer
+dependencies through the mounted theme path with `ddev composer` when they need
+the project's PHP runtime.
+
+Before activation, inspect the theme for required plugins and verify they are
+installed. ACF-based themes can fatal when `get_field()` or block registration
+APIs are unavailable. Keep premium plugin files and licenses private.
+
+Create a database snapshot before changing theme state. On multisite, network
+enable the theme before activating it on the intended site:
+
+```bash
+ddev wp theme enable <theme-slug> --network
+ddev wp theme activate <theme-slug> --url='https://<project-name>.dev.test'
+```
+
+Finish by running the theme's build, lint, typecheck, and tests, checking that
+the theme worktree remains clean except for intended changes, and verifying the
+front end and authenticated admin in a real browser. Do not report success from
+an HTTP status or successful activation alone.
 
 ## Database Migration
 

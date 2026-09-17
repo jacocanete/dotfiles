@@ -1,0 +1,14 @@
+{
+  "version": "1",
+  "bank": {
+    "memory_defense": {
+      "enabled": true,
+      "rules": [
+        {
+          "on": "sensitive_data",
+          "action": "redact"
+        }
+      ]
+    }
+  }
+}

@@ -30,6 +30,7 @@ package-name/
 | ddev | Private DNS and HTTPS trust setup for DDEV sites on `home-dev` |
 | localwp | Local WP desktop entry |
 | opencode | OpenCode configuration, skills, and `home-dev` Web service |
+| hindsight | Self-hosted coding-agent memory configuration |
 
 ## Usage
 
@@ -228,6 +229,48 @@ Disable remote OpenCode access without changing the firewall rule with:
 
 ```bash
 systemctl --user disable --now opencode-web.service
+```
+
+### OpenCode and Hindsight
+
+The OpenCode package includes the global agents, commands, skills, and model
+configuration. Hindsight runs locally in Docker and stores its database in a
+named volume; only its portable configuration is tracked.
+
+Deploy both packages without folding their directories so machine-local files
+can coexist with the tracked symlinks:
+
+```bash
+stow --no-folding --restow --dir="$HOME/dotfiles" --target="$HOME" hindsight opencode
+```
+
+Create the owner-only credential file from the tracked template and set the
+OpenAI extraction key and Fireworks reflection key. Never commit this file:
+
+```bash
+test -e "$HOME/.config/hindsight/credentials.env" || \
+  install -m 0600 \
+    "$HOME/.config/hindsight/credentials.env.example" \
+    "$HOME/.config/hindsight/credentials.env"
+```
+
+Start the pinned Hindsight 0.10.0 server and install the pinned coding-agent
+integration for OpenCode:
+
+```bash
+docker compose -f "$HOME/.config/hindsight/compose.yaml" up -d
+npx -y @vectorize-io/hindsight-coding-agents@0.6.1 \
+  install opencode \
+  --server self-hosted \
+  --api-url http://127.0.0.1:8888
+```
+
+The installer stages generated runtime files under `~/.hindsight/coding-agents`.
+Its runtime, logs, memory database, and credentials remain machine-local. Quit
+and restart OpenCode after installation, then verify the merged configuration:
+
+```bash
+opencode debug config
 ```
 
 ### GitHub identities in `home-dev`

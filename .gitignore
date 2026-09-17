@@ -1,3 +1,4 @@
 .serena/
 zellij/.config/zellij/certs/
 git/.config/git/local
+hindsight/.config/hindsight/credentials.env

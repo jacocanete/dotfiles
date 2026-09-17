@@ -1,6 +1,6 @@
 ---
 name: home-dev-networking
-description: home-dev networking, ZeroTier, ZTNet, dev.test DNS, dnsmasq, systemd-resolved, TLS trust, UFW, ports, reverse proxies, and remote development access. Use when exposing or troubleshooting Astro, DDEV, PocketBase, Expo, Metro, APIs, or other services on the development VM.
+description: home-dev networking and remote development access. Use whenever the user wants a development server, site, app, or API on the VM to be reachable from a phone, laptop, browser, LAN, or remote client, even if networking is not mentioned explicitly. Trigger for inaccessible localhost URLs, bind or listen addresses, port conflicts, service exposure, ZeroTier, ZTNet, dev.test DNS, dnsmasq, systemd-resolved, TLS trust, certificates, UFW, reverse proxies, and connectivity involving Astro, DDEV, PocketBase, Expo, Metro, or other dev servers.
 ---
 
 # home-dev Networking

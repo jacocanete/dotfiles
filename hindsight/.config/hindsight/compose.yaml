@@ -1,0 +1,31 @@
+services:
+  hindsight:
+    image: ghcr.io/vectorize-io/hindsight:0.10.0
+    container_name: hindsight
+    restart: unless-stopped
+    env_file:
+      - credentials.env
+    environment:
+      HINDSIGHT_API_WORKER_ID: hindsight
+      HINDSIGHT_API_LLM_PROVIDER: openai
+      HINDSIGHT_API_LLM_MODEL: gpt-5.6-luna
+      HINDSIGHT_API_LLM_REASONING_EFFORT: low
+      HINDSIGHT_API_LLM_OUTPUT_LANGUAGE: English
+      HINDSIGHT_API_REFLECT_LLM_PROVIDER: fireworks
+      HINDSIGHT_API_REFLECT_LLM_MODEL: accounts/fireworks/models/gpt-oss-120b
+      HINDSIGHT_API_EMBEDDINGS_PROVIDER: local
+      HINDSIGHT_API_EMBEDDINGS_LOCAL_MODEL: BAAI/bge-small-en-v1.5
+      HINDSIGHT_API_RERANKER_PROVIDER: local
+      HINDSIGHT_API_RERANKER_LOCAL_MODEL: cross-encoder/ms-marco-MiniLM-L-6-v2
+      HINDSIGHT_API_DEFAULT_BANK_TEMPLATE: '{"version":"1","bank":{"memory_defense":{"enabled":true,"rules":[{"on":"sensitive_data","action":"redact"}]}}}'
+    ports:
+      - "127.0.0.1:8888:8888"
+      - "127.0.0.1:9999:9999"
+      - "10.121.16.20:9999:9999"
+    volumes:
+      - hindsight-data:/home/hindsight/.pg0
+    cpus: 4
+    mem_limit: 6g
+
+volumes:
+  hindsight-data:

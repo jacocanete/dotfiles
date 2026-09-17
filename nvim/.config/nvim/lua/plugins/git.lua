@@ -5,24 +5,26 @@ return {
     "tpope/vim-fugitive",
     cmd = { "Git", "G", "Gwrite", "Gread", "Gvdiffsplit", "Gdiffsplit", "Gclog" },
     config = function()
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "fugitive",
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "FugitiveIndex",
         callback = function(event)
           local opts = { buffer = event.buf }
 
           local ai_commit_job = nil
+          local ai_commit_request = nil
 
           vim.keymap.set("n", "C", function()
             if ai_commit_job then
               vim.fn.jobstop(ai_commit_job)
               ai_commit_job = nil
+              ai_commit_request = nil
               Snacks.notifier.hide "ai_commit"
               Snacks.notify.warn("Cancelled", { title = "AI Commit" })
               return
             end
 
-            if vim.fn.executable "opencode" ~= 1 then
-              Snacks.notify.error("OpenCode CLI not found in PATH", { title = "AI Commit" })
+            if vim.fn.executable "curl" ~= 1 then
+              Snacks.notify.error("curl not found in PATH", { title = "AI Commit" })
               return
             end
 
@@ -47,42 +49,93 @@ return {
               return
             end
 
-            local prompt =
-              "Generate a concise git commit message for these staged changes. Output ONLY the raw commit message with no markdown, no code blocks, no backticks, no explanations. Use conventional commit format.\n\n"
-                .. staged_diff
+            local prompt = "Generate a concise git commit message for these staged changes. Output ONLY the raw commit message with no markdown, no code blocks, no backticks, no explanations. Use conventional commit format.\n\n"
+              .. staged_diff
 
-            local opencode_cmd = "opencode run --format json " .. vim.fn.shellescape(prompt)
+            local request = {}
+            ai_commit_request = request
 
-            local output = {}
+            local server = "http://10.121.16.20:4096"
+            local directory = vim.uri_encode(vim.fn.getcwd())
+            local session_url = server .. "/session?directory=" .. directory
 
-            ai_commit_job = vim.fn.jobstart(opencode_cmd, {
-              stdout_buffered = true,
-              on_stdout = function(_, data)
-                if not data then
+            local function fail(message)
+              if ai_commit_request ~= request then return end
+
+              ai_commit_job = nil
+              ai_commit_request = nil
+              Snacks.notifier.hide "ai_commit"
+              Snacks.notify.error(message, { title = "AI Commit" })
+            end
+
+            local function post(url, body, callback)
+              local output = {}
+
+              ai_commit_job = vim.fn.jobstart({
+                "curl",
+                "-fsS",
+                "-X",
+                "POST",
+                url,
+                "-H",
+                "Content-Type: application/json",
+                "--data",
+                body,
+              }, {
+                stdout_buffered = true,
+                on_stdout = function(_, data)
+                  if data then vim.list_extend(output, data) end
+                end,
+                on_exit = function(_, exit_code)
+                  if ai_commit_request ~= request then return end
+
+                  ai_commit_job = nil
+                  callback(exit_code, table.concat(output, "\n"))
+                end,
+              })
+
+              if ai_commit_job <= 0 then fail "Failed to start curl" end
+            end
+
+            post(session_url, "{}", function(exit_code, response)
+              if exit_code ~= 0 then
+                fail "Failed to connect to OpenCode"
+                return
+              end
+
+              local ok, session = pcall(vim.json.decode, response)
+              if not ok or type(session) ~= "table" or type(session.id) ~= "string" then
+                fail "Invalid response from OpenCode"
+                return
+              end
+
+              local message_url = server .. "/session/" .. session.id .. "/message?directory=" .. directory
+              local body = vim.json.encode {
+                model = { providerID = "openai", modelID = "gpt-5.6-luna-fast" },
+                parts = { { type = "text", text = prompt } },
+              }
+
+              post(message_url, body, function(message_exit_code, message_response)
+                if message_exit_code ~= 0 then
+                  fail "Failed to generate commit message"
                   return
                 end
 
-                for _, line in ipairs(data) do
-                  if line and line ~= "" then
-                    table.insert(output, line)
-                  end
+                local decoded, result = pcall(vim.json.decode, message_response)
+                if not decoded or type(result) ~= "table" or type(result.parts) ~= "table" then
+                  fail "Invalid response from OpenCode"
+                  return
                 end
-              end,
-              on_exit = function(_, exit_code)
+
                 ai_commit_job = nil
+                ai_commit_request = nil
                 Snacks.notifier.hide "ai_commit"
-
-                if exit_code ~= 0 then
-                  Snacks.notify.error("Failed to generate commit message", { title = "AI Commit" })
-                  return
-                end
 
                 local commit_msg_lines = {}
 
-                for _, line in ipairs(output) do
-                  local ok, event = pcall(vim.fn.json_decode, line)
-                  if ok and type(event) == "table" and event.type == "text" and type(event.text) == "string" then
-                    table.insert(commit_msg_lines, event.text)
+                for _, part in ipairs(result.parts) do
+                  if part.type == "text" and type(part.text) == "string" then
+                    table.insert(commit_msg_lines, part.text)
                   end
                 end
 
@@ -98,8 +151,8 @@ return {
                   Snacks.notify.info("Commit message ready!", { title = "AI Commit", timeout = 2000 })
                   vim.cmd("Git commit -e -F " .. tmp)
                 end)
-              end,
-            })
+              end)
+            end)
           end, vim.tbl_extend("force", opts, { desc = "AI commit message" }))
 
           vim.keymap.set("n", "<leader>gp", "<cmd>Git push<cr>", vim.tbl_extend("force", opts, { desc = "git [p]ush" }))

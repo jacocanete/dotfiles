@@ -1,0 +1,20 @@
+{
+  "serverMode": "self-hosted",
+  "apiUrl": "http://127.0.0.1:8888",
+  "disabled": false,
+  "autoUpdate": false,
+  "optInOnly": true,
+  "optInPaths": ["/home/jacocanete/Projects"],
+  "resolveWorktrees": true,
+  "observationScopes": "shared",
+  "gitIngest": "message",
+  "autoSeed": true,
+  "seedLimit": 300,
+  "codebaseSurvey": true,
+  "surveyRefreshCommits": 20,
+  "retainSessions": true,
+  "autoReflect": true,
+  "pageTriggerType": "cron",
+  "pageTriggerCron": "H H * * *",
+  "maxParallelRetains": 2
+}
