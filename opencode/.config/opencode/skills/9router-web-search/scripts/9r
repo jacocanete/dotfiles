@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Web search / fetch via 9Router. Wraps POST /v1/search and /v1/web/fetch so
+# agents never need raw curl (and never see the API key) to research the web.
+set -euo pipefail
+
+: "${NINEROUTER_URL:?9r: NINEROUTER_URL is not set}"
+: "${NINEROUTER_KEY:?9r: NINEROUTER_KEY is not set}"
+
+usage() {
+  cat >&2 <<'EOF'
+usage:
+  9r search <query> [-n <max_results>] [-m <model>] [-t web|news|x]
+  9r fetch  <url>   [-f markdown|text|html] [-m <model>] [-c <max_characters>]
+
+Defaults: search -> search-combo, fetch -> fetch-combo (auto-fallback chains).
+Discover providers: 9r models
+EOF
+  exit 64
+}
+
+post() {
+  curl -fsS --max-time 90 -X POST "$NINEROUTER_URL$1" \
+    -H "Authorization: Bearer $NINEROUTER_KEY" \
+    -H 'Content-Type: application/json' \
+    -d "$2"
+}
+
+cmd=${1-}; shift || usage
+
+case "$cmd" in
+  search)
+    query=${1-}; shift || true
+    [ -n "$query" ] || usage
+    model=search-combo n=5 type=web
+    while getopts ':n:m:t:' o; do
+      case "$o" in
+        n) n=$OPTARG ;; m) model=$OPTARG ;; t) type=$OPTARG ;; *) usage ;;
+      esac
+    done
+    body=$(jq -nc --arg q "$query" --arg m "$model" --arg t "$type" --argjson n "$n" \
+      '{model:$m, query:$q, max_results:$n, search_type:$t}')
+    post /v1/search "$body"
+    ;;
+  fetch)
+    url=${1-}; shift || true
+    [ -n "$url" ] || usage
+    model=fetch-combo format=markdown chars=0
+    while getopts ':f:m:c:' o; do
+      case "$o" in
+        f) format=$OPTARG ;; m) model=$OPTARG ;; c) chars=$OPTARG ;; *) usage ;;
+      esac
+    done
+    body=$(jq -nc --arg u "$url" --arg m "$model" --arg f "$format" --argjson c "$chars" \
+      '{model:$m, url:$u, format:$f} + (if $c > 0 then {max_characters:$c} else {} end)')
+    post /v1/web/fetch "$body"
+    ;;
+  models)
+    curl -fsS --max-time 30 "$NINEROUTER_URL/v1/models/web" \
+      -H "Authorization: Bearer $NINEROUTER_KEY"
+    ;;
+  *) usage ;;
+esac
