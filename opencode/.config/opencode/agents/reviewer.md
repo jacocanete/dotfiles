@@ -1,7 +1,7 @@
 ---
 description: Independent read-only review using OCR delegation for scope and rules, with evidence-based findings and explicit coverage.
 mode: subagent
-model: openai/gpt-5.6-sol
+model: 9router/agent-strong
 variant: high
 permission:
   "*": deny
@@ -34,6 +34,13 @@ permission:
     "git show --format= --no-ext-diff --no-textconv --end-of-options *": allow
     "git rev-parse --verify --end-of-options *": allow
     "git ls-files --others --exclude-standard": allow
+    "ghx repo view*": allow
+    "ghx issue list*": allow
+    "ghx issue view*": allow
+    "ghx search issues*": allow
+    "ghx pr list*": allow
+    "ghx pr view*": allow
+    "ghx pr diff*": allow
   task: deny
   hindsight_*: deny
 ---

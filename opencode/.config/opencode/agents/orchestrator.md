@@ -1,7 +1,7 @@
 ---
 description: Explicitly selected manager coordinating Explore, Implementer, Code-simplifier, and Reviewer.
 mode: primary
-model: openai/gpt-5.6-sol
+model: 9router/agent-strong
 variant: medium
 permission:
   "*": deny
@@ -30,6 +30,17 @@ permission:
     "git ls-files --others --exclude-standard": allow
     "git diff --no-ext-diff --no-textconv --stat": allow
     "git log --oneline -10": allow
+    "ghx repo view*": allow
+    "ghx issue list*": allow
+    "ghx issue view*": allow
+    "ghx search issues*": allow
+    "ghx label list*": allow
+    "ghx pr list*": allow
+    "ghx pr view*": allow
+    "ghx pr diff*": allow
+    "9r search*": allow
+    "9r fetch*": allow
+    "9r models*": allow
   task:
     "*": deny
     explore: allow

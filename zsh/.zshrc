@@ -225,9 +225,4 @@ fi
 # Zoxide Setup (must be initialized last so its hook sits at the end of the chain)
 command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init --cmd cd zsh)"
 
-# Android SDK (added for Loadout dev builds)
-export ANDROID_HOME="$HOME/Android/Sdk"
-export ANDROID_SDK_ROOT="$ANDROID_HOME"
-if [[ -d "$ANDROID_HOME" ]]; then
-  export PATH="$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator"
-fi
+[[ -r "$HOME/.config/profile.d/android-sdk.sh" ]] && source "$HOME/.config/profile.d/android-sdk.sh"

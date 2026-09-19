@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Run gh against the GitHub account that matches this repo's remote host alias.
+# Avoids depending on `gh auth switch` global state, which silently changes
+# which account (and therefore which repos) every gh call can see.
+set -euo pipefail
+
+host=$(git remote get-url origin 2>/dev/null | sed -n 's/^git@\([^:]*\):.*/\1/p') || true
+
+if [ -n "${host:-}" ]; then
+  account=$(git config --get "ghx.account-${host}" || true)
+  if [ -z "$account" ]; then
+    echo "ghx: no account mapped for remote host '${host}'." >&2
+    echo "ghx: set one with: git config --global ghx.account-${host} <github-login>" >&2
+    exit 78
+  fi
+  if ! token=$(gh auth token --hostname github.com --user "$account" 2>/dev/null) || [ -z "$token" ]; then
+    echo "ghx: account '${account}' (for remote host '${host}') is not logged in." >&2
+    echo "ghx: log in with: gh auth login --hostname github.com" >&2
+    exit 78
+  fi
+  export GH_TOKEN="$token"
+  export GH_HOST=github.com
+fi
+
+exec gh "$@"

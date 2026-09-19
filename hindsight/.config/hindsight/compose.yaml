@@ -8,11 +8,16 @@ services:
     environment:
       HINDSIGHT_API_WORKER_ID: hindsight
       HINDSIGHT_API_LLM_PROVIDER: openai
-      HINDSIGHT_API_LLM_MODEL: gpt-5.6-luna
+      HINDSIGHT_API_LLM_BASE_URL: https://9router.jacocanete.dev/v1
+      HINDSIGHT_API_LLM_MODEL: memory-extract
       HINDSIGHT_API_LLM_REASONING_EFFORT: low
+      HINDSIGHT_API_LLM_TIMEOUT: 300
+      HINDSIGHT_API_LLM_DEFAULT_HEADERS: '{"X-9Router-Token-Saver":"off"}'
       HINDSIGHT_API_LLM_OUTPUT_LANGUAGE: English
-      HINDSIGHT_API_REFLECT_LLM_PROVIDER: fireworks
-      HINDSIGHT_API_REFLECT_LLM_MODEL: accounts/fireworks/models/gpt-oss-120b
+      HINDSIGHT_API_REFLECT_LLM_PROVIDER: openai
+      HINDSIGHT_API_REFLECT_LLM_BASE_URL: https://9router.jacocanete.dev/v1
+      HINDSIGHT_API_REFLECT_LLM_MODEL: memory-reflect
+      HINDSIGHT_API_REFLECT_LLM_TIMEOUT: 300
       HINDSIGHT_API_EMBEDDINGS_PROVIDER: local
       HINDSIGHT_API_EMBEDDINGS_LOCAL_MODEL: BAAI/bge-small-en-v1.5
       HINDSIGHT_API_RERANKER_PROVIDER: local

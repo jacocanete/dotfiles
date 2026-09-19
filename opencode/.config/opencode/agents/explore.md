@@ -1,7 +1,7 @@
 ---
 description: Read-only repository investigation for broad searches and execution-path tracing; returns concise evidence and file references.
 mode: subagent
-model: openai/gpt-5.6-terra
+model: 9router/agent-code
 variant: medium
 permission:
   "*": deny
@@ -21,6 +21,17 @@ permission:
     "git status": allow
     "git diff --no-ext-diff --no-textconv": allow
     "git log --oneline -10": allow
+    "ghx repo view*": allow
+    "ghx issue list*": allow
+    "ghx issue view*": allow
+    "ghx search issues*": allow
+    "ghx label list*": allow
+    "ghx pr list*": allow
+    "ghx pr view*": allow
+    "ghx pr diff*": allow
+    "9r search*": allow
+    "9r fetch*": allow
+    "9r models*": allow
   task: deny
   hindsight_*: deny
 ---

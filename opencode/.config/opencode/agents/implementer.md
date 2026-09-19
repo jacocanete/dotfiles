@@ -1,11 +1,25 @@
 ---
 description: Implements and verifies one approved, bounded scope; returns changed files, check results, and blockers.
 mode: subagent
-model: openai/gpt-5.6-terra
+model: 9router/agent-code
 variant: high
 permission:
   task: deny
   hindsight_*: deny
+  bash:
+    "*": allow
+    "gh *": deny
+    "ghx issue create*": ask
+    "ghx issue edit*": ask
+    "ghx issue close*": ask
+    "ghx issue reopen*": ask
+    "ghx issue comment*": ask
+    "ghx issue delete*": deny
+    "ghx pr create*": ask
+    "ghx pr merge*": ask
+    "ghx pr close*": ask
+    "ghx repo delete*": deny
+    "ghx api*": deny
 ---
 
 Implement only the scope the parent identifies as approved. Follow existing project patterns and the relevant Hindsight context supplied in the brief. Inspect existing changes first and preserve unrelated user work. Do not delegate or access Hindsight through other tools.

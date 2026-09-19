@@ -47,3 +47,6 @@
 
 [include]
 	path = ~/.config/git/local
+[ghx]
+	account-personalgit = jacocanete
+	account-workgit = jcaneteDI

@@ -1,7 +1,7 @@
 ---
 description: Applies focused, behavior-preserving cleanup after implementation or on explicit request; improves clarity and reuse and verifies changes.
 mode: subagent
-model: openai/gpt-5.6-terra
+model: 9router/agent-code
 variant: high
 permission:
   task: deny
