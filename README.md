@@ -244,8 +244,22 @@ can coexist with the tracked symlinks:
 stow --no-folding --restow --dir="$HOME/dotfiles" --target="$HOME" hindsight opencode
 ```
 
-Create the owner-only credential file from the tracked template and set the
-OpenAI extraction key and Fireworks reflection key. Never commit this file:
+The `9router-web-search` and `9router-web-fetch` skills call a `9r` wrapper that
+reads its endpoint and key from the environment. Point `~/.zshenv` at the
+instance, since OpenCode runs tools in non-interactive shells that never read
+`~/.zshrc`, and keep the file owner-only and untracked:
+
+```bash
+cat > "$HOME/.zshenv" <<'SH'
+export NINEROUTER_URL="https://9router.example.com"
+export NINEROUTER_KEY="..."
+SH
+chmod 600 "$HOME/.zshenv"
+ln -sf "$HOME/.config/opencode/skills/9router-web-search/scripts/9r" "$HOME/.local/bin/9r"
+```
+
+Create the owner-only credential file from the tracked template and set both
+keys to the 9Router API key. Never commit this file:
 
 ```bash
 test -e "$HOME/.config/hindsight/credentials.env" || \
@@ -272,6 +286,36 @@ and restart OpenCode after installation, then verify the merged configuration:
 ```bash
 opencode debug config
 ```
+
+### Rotating the 9Router API key
+
+One key authenticates OpenCode's model calls, the `9r` web search and fetch
+wrapper, and Hindsight's extraction and reflection. It is stored in three
+machine-local files, none of them tracked, so every copy has to be replaced
+together.
+
+1. In the 9Router dashboard, issue a new key and delete the old one.
+2. Set `NINEROUTER_KEY` in `~/.zshenv`.
+3. Set `HINDSIGHT_API_LLM_API_KEY` and `HINDSIGHT_API_REFLECT_LLM_API_KEY` in
+   `~/.config/hindsight/credentials.env`.
+4. Update OpenCode's own credential store with `opencode auth login`, then
+   choose 9Router.
+5. Restart both consumers, then quit and restart OpenCode:
+
+```bash
+docker compose -f "$HOME/.config/hindsight/compose.yaml" up -d
+```
+
+Verify that the new key is accepted and the old one is not:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' "$NINEROUTER_URL/v1/models" \
+  -H "Authorization: Bearer $NINEROUTER_KEY"          # expect 200
+curl -s -o /dev/null -w '%{http_code}\n' "$NINEROUTER_URL/v1/models" \
+  -H "Authorization: Bearer <old-key>"                # expect 401
+```
+
+Issuing a new key does not revoke the old one. Check for the 401 explicitly.
 
 ### GitHub identities in `home-dev`
 
