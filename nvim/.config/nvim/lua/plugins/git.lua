@@ -28,6 +28,11 @@ return {
               return
             end
 
+            if not vim.env.NINEROUTER_KEY or vim.env.NINEROUTER_KEY == "" then
+              Snacks.notify.error("NINEROUTER_KEY is not set", { title = "AI Commit" })
+              return
+            end
+
             vim.fn.system "git diff --cached --quiet"
             if vim.v.shell_error == 0 then
               Snacks.notify.warn("No staged changes to commit", { title = "AI Commit" })
@@ -45,6 +50,7 @@ return {
 
             local staged_diff = vim.fn.system "git diff --staged --stat; git diff --staged | head -2000"
             if vim.v.shell_error ~= 0 then
+              Snacks.notifier.hide "ai_commit"
               Snacks.notify.error("Failed to read staged diff", { title = "AI Commit" })
               return
             end
@@ -55,10 +61,6 @@ return {
             local request = {}
             ai_commit_request = request
 
-            local server = "http://10.121.16.20:4096"
-            local directory = vim.uri_encode(vim.fn.getcwd())
-            local session_url = server .. "/session?directory=" .. directory
-
             local function fail(message)
               if ai_commit_request ~= request then return end
 
@@ -68,62 +70,48 @@ return {
               Snacks.notify.error(message, { title = "AI Commit" })
             end
 
-            local function post(url, body, callback)
-              local output = {}
+            local body = vim.json.encode {
+              model = "agent-fast",
+              messages = { { role = "user", content = prompt } },
+            }
+            local output = {}
+            ai_commit_job = vim.fn.jobstart({
+              "curl",
+              "-fsS",
+              "-X",
+              "POST",
+              "http://127.0.0.1:20128/v1/chat/completions",
+              "-H",
+              "Content-Type: application/json",
+              "--write-out",
+              "\nHTTP_STATUS:%{http_code}",
+              "--config",
+              "-",
+            }, {
+              stdout_buffered = true,
+              on_stdout = function(_, data)
+                if data then vim.list_extend(output, data) end
+              end,
+              on_exit = function(_, exit_code)
+                if ai_commit_request ~= request then return end
 
-              ai_commit_job = vim.fn.jobstart({
-                "curl",
-                "-fsS",
-                "-X",
-                "POST",
-                url,
-                "-H",
-                "Content-Type: application/json",
-                "--data",
-                body,
-              }, {
-                stdout_buffered = true,
-                on_stdout = function(_, data)
-                  if data then vim.list_extend(output, data) end
-                end,
-                on_exit = function(_, exit_code)
-                  if ai_commit_request ~= request then return end
-
-                  ai_commit_job = nil
-                  callback(exit_code, table.concat(output, "\n"))
-                end,
-              })
-
-              if ai_commit_job <= 0 then fail "Failed to start curl" end
-            end
-
-            post(session_url, "{}", function(exit_code, response)
-              if exit_code ~= 0 then
-                fail "Failed to connect to OpenCode"
-                return
-              end
-
-              local ok, session = pcall(vim.json.decode, response)
-              if not ok or type(session) ~= "table" or type(session.id) ~= "string" then
-                fail "Invalid response from OpenCode"
-                return
-              end
-
-              local message_url = server .. "/session/" .. session.id .. "/message?directory=" .. directory
-              local body = vim.json.encode {
-                model = { providerID = "openai", modelID = "gpt-5.6-luna-fast" },
-                parts = { { type = "text", text = prompt } },
-              }
-
-              post(message_url, body, function(message_exit_code, message_response)
-                if message_exit_code ~= 0 then
-                  fail "Failed to generate commit message"
+                local response = table.concat(output, "\n")
+                local http_status = response:match("\nHTTP_STATUS:(%d%d%d)$")
+                if exit_code ~= 0 then
+                  local category = exit_code == 7 and "connection"
+                      or exit_code == 28 and "timeout"
+                      or exit_code == 22 and "HTTP"
+                      or "request"
+                  fail(string.format("9Router %s failed (curl %d, HTTP %s)", category, exit_code, http_status or "unavailable"))
                   return
                 end
 
-                local decoded, result = pcall(vim.json.decode, message_response)
-                if not decoded or type(result) ~= "table" or type(result.parts) ~= "table" then
-                  fail "Invalid response from OpenCode"
+                local decoded, result = pcall(vim.json.decode, (response:gsub("\nHTTP_STATUS:%d%d%d$", "")))
+                local choice = decoded and type(result) == "table" and type(result.choices) == "table"
+                    and result.choices[1]
+                local message = type(choice) == "table" and choice.message
+                if type(message) ~= "table" or type(message.content) ~= "string" then
+                  fail "Invalid response from 9Router"
                   return
                 end
 
@@ -131,17 +119,9 @@ return {
                 ai_commit_request = nil
                 Snacks.notifier.hide "ai_commit"
 
-                local commit_msg_lines = {}
-
-                for _, part in ipairs(result.parts) do
-                  if part.type == "text" and type(part.text) == "string" then
-                    table.insert(commit_msg_lines, part.text)
-                  end
-                end
-
-                local commit_msg = vim.trim(table.concat(commit_msg_lines, "\n"))
+                local commit_msg = vim.trim(message.content)
                 if commit_msg == "" then
-                  Snacks.notify.error("Empty response from OpenCode", { title = "AI Commit" })
+                  Snacks.notify.error("Empty response from 9Router", { title = "AI Commit" })
                   return
                 end
 
@@ -151,8 +131,17 @@ return {
                   Snacks.notify.info("Commit message ready!", { title = "AI Commit", timeout = 2000 })
                   vim.cmd("Git commit -e -F " .. tmp)
                 end)
-              end)
-            end)
+              end,
+            })
+
+            if ai_commit_job <= 0 then
+              fail "Failed to start curl"
+              return
+            end
+
+            vim.fn.chansend(ai_commit_job, "header = " .. vim.json.encode("Authorization: Bearer " .. vim.env.NINEROUTER_KEY) .. "\n")
+            vim.fn.chansend(ai_commit_job, "data-binary = " .. vim.json.encode(body) .. "\n")
+            vim.fn.chanclose(ai_commit_job, "stdin")
           end, vim.tbl_extend("force", opts, { desc = "AI commit message" }))
 
           vim.keymap.set("n", "<leader>gp", "<cmd>Git push<cr>", vim.tbl_extend("force", opts, { desc = "git [p]ush" }))

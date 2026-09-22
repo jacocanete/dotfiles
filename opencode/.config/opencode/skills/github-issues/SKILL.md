@@ -65,8 +65,8 @@ silently truncates, which makes an audit look complete when it is not.
 
 ## Filing
 
-Creating issues is a write. Read-only agents (Plan, Orchestrator, Explore,
-Reviewer) must not do it. Orchestrator delegates filing to Implementer with the
+Creating issues is a write. Read-only agents (Plan, Orchestrator, Explore)
+must not do it. Orchestrator delegates filing to Implementer with the
 full titles and bodies in the brief; each `ghx issue create` still prompts the
 user.
 

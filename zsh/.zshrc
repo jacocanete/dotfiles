@@ -1,6 +1,15 @@
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
+# Minimal Zellij Web profile: its renderer corrupts ZLE redraw output.
+if [[ "${ZELLIJ_WEB:-}" == 1 ]]; then
+	export PATH=$HOME/.opencode/bin:$HOME/.local/bin:$HOME/bin:$PATH
+	export EDITOR=nvim
+	PROMPT='%n@%m:%~%# '
+	RPROMPT=''
+	return 0
+fi
+
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
@@ -74,7 +83,7 @@ plugins=(
 	wp-cli
 	git
 	zsh-autosuggestions
-  zsh-syntax-highlighting
+	zsh-syntax-highlighting
 )
 
 [[ -r "$ZSH/oh-my-zsh.sh" ]] && source "$ZSH/oh-my-zsh.sh"

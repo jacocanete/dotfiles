@@ -1,0 +1,5 @@
+# Traefik verifies Zellij's DDEV-CA backend certificate with this mounted CA.
+services:
+  ddev-router:
+    volumes:
+      - ${HOME}/.local/share/mkcert/rootCA.pem:/certs/home-dev-rootCA.pem:ro

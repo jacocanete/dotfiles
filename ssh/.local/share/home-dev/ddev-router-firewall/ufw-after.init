@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -eu
+
+reconcile=/usr/local/libexec/ddev-router-firewall/reconcile
+
+case ${1:-} in
+start)
+	"$reconcile" install-rules
+	;;
+stop|flush-all)
+	"$reconcile" clear
+	;;
+status)
+	exit 0
+	;;
+*)
+	exit 64
+	;;
+esac

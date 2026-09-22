@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -eu
+
+reconcile=/usr/local/libexec/ddev-router-firewall/reconcile
+
+"$reconcile" reconcile
+/usr/bin/docker events --filter type=container --filter container=ddev-router --format '{{.Action}}' |
+while IFS= read -r status; do
+	case "$status" in
+		create|start|unpause|connect|disconnect|die|stop|destroy|kill|pause)
+			"$reconcile" reconcile
+			;;
+	esac
+done
+
+"$reconcile" clear
+exit 1

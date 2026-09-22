@@ -1,0 +1,56 @@
+http:
+  routers:
+    opencode-host-http:
+      entrypoints:
+        - http-80
+      rule: Host(`opencode.dev.test`)
+      service: opencode-host
+      middlewares:
+        - opencode-host-https
+    opencode-host-https:
+      entrypoints:
+        - http-443
+      rule: Host(`opencode.dev.test`)
+      service: opencode-host
+      tls: true
+    zellij-host-http:
+      entrypoints:
+        - http-80
+      rule: Host(`zellij.dev.test`)
+      service: zellij-host
+      middlewares:
+        - zellij-host-https
+    zellij-host-https:
+      entrypoints:
+        - http-443
+      rule: Host(`zellij.dev.test`)
+      service: zellij-host
+      tls: true
+  middlewares:
+    opencode-host-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+    zellij-host-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+  services:
+    opencode-host:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: http://10.121.16.20:4096
+    zellij-host:
+      loadBalancer:
+        passHostHeader: true
+        serversTransport: zellij-host-transport
+        servers:
+          - url: https://10.121.16.20:8082
+  serversTransports:
+    zellij-host-transport:
+      # The Zellij backend presents DDEV's wildcard certificate. Verify it
+      # against the hosted name while connecting to its pinned host address.
+      serverName: zellij.dev.test
+      rootCAs:
+        - /certs/home-dev-rootCA.pem

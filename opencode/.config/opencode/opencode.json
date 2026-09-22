@@ -33,7 +33,7 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "9Router",
       "options": {
-        "baseURL": "https://9router.jacocanete.dev/v1"
+        "baseURL": "http://127.0.0.1:20128/v1"
       },
       "models": {
         "agent-max": {
@@ -56,7 +56,8 @@
     }
   },
   "plugin": [
-    "/home/jacocanete/.hindsight/coding-agents"
+    "/home/jacocanete/.hindsight/coding-agents",
+    "@ory/lumen-opencode@0.0.39"
   ],
   "lsp": {
     "css": {

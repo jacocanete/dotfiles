@@ -1,0 +1,17 @@
+{
+  "provider": "9Router",
+  "model": "gpt-5.6-sol",
+  "custom_providers": {
+    "9Router": {
+      "api_key": "REPLACE_WITH_9ROUTER_API_KEY",
+      "url": "https://9router.jacocanete.dev/v1",
+      "protocol": "openai",
+      "model": "gpt-5.6-sol",
+      "models": ["gpt-5.6-sol"],
+      "extra_headers": {
+        "X-9Router-Token-Saver": "off"
+      }
+    }
+  },
+  "llm": {}
+}

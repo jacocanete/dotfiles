@@ -8,14 +8,14 @@ services:
     environment:
       HINDSIGHT_API_WORKER_ID: hindsight
       HINDSIGHT_API_LLM_PROVIDER: openai
-      HINDSIGHT_API_LLM_BASE_URL: https://9router.jacocanete.dev/v1
+      HINDSIGHT_API_LLM_BASE_URL: http://10.121.16.20:20128/v1
       HINDSIGHT_API_LLM_MODEL: memory-extract
       HINDSIGHT_API_LLM_REASONING_EFFORT: low
       HINDSIGHT_API_LLM_TIMEOUT: 300
       HINDSIGHT_API_LLM_DEFAULT_HEADERS: '{"X-9Router-Token-Saver":"off"}'
       HINDSIGHT_API_LLM_OUTPUT_LANGUAGE: English
       HINDSIGHT_API_REFLECT_LLM_PROVIDER: openai
-      HINDSIGHT_API_REFLECT_LLM_BASE_URL: https://9router.jacocanete.dev/v1
+      HINDSIGHT_API_REFLECT_LLM_BASE_URL: http://10.121.16.20:20128/v1
       HINDSIGHT_API_REFLECT_LLM_MODEL: memory-reflect
       HINDSIGHT_API_REFLECT_LLM_TIMEOUT: 300
       HINDSIGHT_API_EMBEDDINGS_PROVIDER: local
@@ -29,8 +29,15 @@ services:
       - "10.121.16.20:9999:9999"
     volumes:
       - hindsight-data:/home/hindsight/.pg0
+    networks:
+      - default
+      - ddev_default
     cpus: 4
     mem_limit: 6g
+
+networks:
+  ddev_default:
+    external: true
 
 volumes:
   hindsight-data:

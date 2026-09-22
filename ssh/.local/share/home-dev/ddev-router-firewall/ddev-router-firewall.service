@@ -1,0 +1,12 @@
+[Unit]
+Description=Reconcile DDEV router host-backend firewall authorization
+Wants=docker.service
+After=ufw.service docker.service network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/libexec/ddev-router-firewall/reconcile install-rules
+
+[Install]
+WantedBy=multi-user.target

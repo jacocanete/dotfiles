@@ -1,0 +1,10 @@
+[Unit]
+Description=Periodic DDEV router firewall reconciliation
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=30s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

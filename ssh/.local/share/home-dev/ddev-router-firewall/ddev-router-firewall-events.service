@@ -1,0 +1,16 @@
+[Unit]
+Description=Reconcile DDEV router authorization from Docker events
+Requires=docker.service
+After=docker.service ddev-router-firewall.service
+BindsTo=docker.service
+PartOf=docker.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/libexec/ddev-router-firewall/watch
+ExecStop=/usr/local/libexec/ddev-router-firewall/reconcile clear
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=docker.service

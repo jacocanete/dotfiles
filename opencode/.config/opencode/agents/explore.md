@@ -5,6 +5,7 @@ model: 9router/agent-code
 variant: medium
 permission:
   "*": deny
+  lumen_*: allow
   read:
     "*": allow
     "*.env": ask
@@ -29,6 +30,7 @@ permission:
     "ghx pr list*": allow
     "ghx pr view*": allow
     "ghx pr diff*": allow
+    "rg *": allow
     "9r search*": allow
     "9r fetch*": allow
     "9r models*": allow

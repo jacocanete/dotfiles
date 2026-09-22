@@ -5,6 +5,7 @@ model: 9router/agent-max
 variant: high
 permission:
   "*": deny
+  lumen_*: allow
   read:
     "*": allow
     "*.env": ask

@@ -4,7 +4,7 @@ agent: orchestrator
 subtask: false
 ---
 
-Coordinate behavior-preserving simplification using the existing Explore, Code-simplifier, and Reviewer agents. Remain the primary Orchestrator so all workers are direct children within the depth-one limit. This command explicitly authorizes the bounded parallel investigation below; it does not authorize unapproved editing scope or bypass project approval rules. Do not edit or run project code yourself.
+Coordinate behavior-preserving simplification using the existing Explore and Code-simplifier agents. Remain the primary Orchestrator so all workers are direct children within the depth-one limit. This command explicitly authorizes the bounded parallel investigation below; it does not authorize unapproved editing scope or bypass project approval rules. Do not edit or run project code yourself.
 
 Requested scope or focus: $ARGUMENTS
 
@@ -46,6 +46,6 @@ Wait for any active writer to finish, then delegate the approved edits to one Co
 
 Require Code-simplifier to inspect its final diff and run applicable project typecheck, tests, and lint, plus targeted behavioral checks when needed. Inspect its actual changes and check evidence yourself. Distinguish existing failures from introduced failures using evidence, and disclose unavailable checks. If verification fails, stop and reassess; resume the same specialist for approved cleanup corrections rather than expanding the refactor. Route behavioral bug fixes to Implementer only after their scope is approved, never concurrently with Code-simplifier.
 
-For significant final edits, invoke Reviewer after the writer finishes. Provide the repository root, explicit workspace scope (or manually enumerated files outside Git), accepted plan, starting-change context, final files, invariants, and executed checks with outcomes. Reviewer must load `ocr-delegated-review`, resolve OCR scope and rules for Git review, and account for all selected files. Distinguish pre-existing workspace changes from this cleanup; do not silently narrow OCR coverage. Route requested execution to a writing specialist and behavioral repairs to Implementer. Re-review significant corrections. Report any partial or blocked review as such.
+For significant final edits, delegate official `ocr_review` to Implementer after the writer finishes. Provide repository root, exact workspace scope or baseline/target refs, accepted plan, starting-change context, final files, invariants, and executed checks. Require approved inline background only, `concurrency: 2`, `timeoutMinutes: 10`, and `overallTimeoutMinutes: 60`; no unapproved `backgroundFile`, `exclude`, or `model`. Receive and triage OCR output, route repairs and checks to Implementer, and request official re-review for significant corrections. Report partial or blocked review as such.
 
-Summarize the scope, completion of all three analysis passes, accepted/deduplicated/skipped candidates, actual simplifications, files changed, checks and outcomes, review status, and remaining uncertainties. Keep the report concise and distinguish worker claims from evidence you inspected. Do not claim an independent Reviewer pass or executed checks unless they actually occurred.
+Summarize the scope, completion of all three analysis passes, accepted/deduplicated/skipped candidates, actual simplifications, files changed, checks and outcomes, review status, and remaining uncertainties. Keep the report concise and distinguish worker claims from evidence you inspected. Do not claim an OCR pass or executed checks unless they actually occurred.

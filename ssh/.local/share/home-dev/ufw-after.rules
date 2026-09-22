@@ -21,6 +21,9 @@
 -A DOCKER-USER -i ztazsqtda4 -s 10.121.16.127 -j RETURN
 -A DOCKER-USER -i ztazsqtda4 -j DROP
 
+# ddev-router-firewall installs its nftables set-matching rules through UFW's
+# after.init hook. Keep this file free of static router addresses.
+
 # don't log noisy services by default
 -A ufw-after-input -p udp --dport 137 -j ufw-skip-to-policy-input
 -A ufw-after-input -p udp --dport 138 -j ufw-skip-to-policy-input

@@ -190,10 +190,84 @@ installs a `systemd-resolved` split-DNS service, verifies the pinned DDEV CA
 fingerprint, updates Fedora's trust store, and tests the site. Normal internet
 DNS remains unchanged because only `~dev.test` is routed through `home-dev`.
 
-### OpenCode Web on `home-dev`
+### Zellij and OpenCode Web on `home-dev`
 
-Open `http://10.121.16.20:4096` from the desktop, ProBook, or phone while the
-client is connected to `homelab-network`. The systemd user service starts with
+Open `https://zellij.dev.test` or `https://opencode.dev.test` from the desktop
+or ProBook while connected to `homelab-network`. These names require the running
+DDEV Traefik router and the DDEV CA installed by `setup-ddev-client`. Traefik
+terminates trusted client TLS and proxies WebSockets to the two host services.
+
+Zellij Web is token-authenticated. Create a token only from a private terminal;
+Zellij prints it once and retains only its native token database entry:
+
+```bash
+zellij web --create-token --token-name home-dev
+zellij web --list-tokens
+zellij web --revoke-token home-dev
+```
+
+Use a new token after revocation. Never save tokens in dotfiles, units, shell
+history, or logs. The service itself needs no token. Deploy both services and
+DDEV routes with:
+
+```bash
+stow --no-folding --restow --dir="$HOME/dotfiles" --target="$HOME" zellij opencode ddev
+sudo install -o root -g root -m 0640 \
+  "$HOME/dotfiles/ssh/.local/share/home-dev/ufw-after.rules" /etc/ufw/after.rules
+sudo ufw reload
+ddev poweroff && ddev start --all
+systemctl --user daemon-reload
+systemctl --user enable --now zellij-web.service opencode-web.service
+```
+
+A root-owned `ddev-router-firewall` reconciler inspects the live
+`ddev-router` container and authorizes its current `ddev_default` address only
+when its name, DDEV platform label, image family, and one-network shape match.
+Its nftables set is empty on Docker errors, router absence, or event-stream loss.
+The matching UFW rule allows only that address on the DDEV bridge to host TCP
+`4096` and `8082`; no other Docker container, client, or phone gains access.
+
+Install the root artifacts after stowing `ssh`, then enable their service and
+backstop timer:
+
+```bash
+sudo install -d -o root -g root -m 0755 /usr/local/libexec/ddev-router-firewall
+sudo install -o root -g root -m 0755 \
+  "$HOME/.local/share/home-dev/ddev-router-firewall/reconcile" \
+  "$HOME/.local/share/home-dev/ddev-router-firewall/watch" \
+  /usr/local/libexec/ddev-router-firewall/
+sudo install -o root -g root -m 0755 \
+  "$HOME/.local/share/home-dev/ddev-router-firewall/ufw-after.init" \
+  /etc/ufw/after.init
+sudo install -o root -g root -m 0644 \
+  "$HOME/.local/share/home-dev/ddev-router-firewall/"*.service \
+  "$HOME/.local/share/home-dev/ddev-router-firewall/"*.timer \
+  /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now ddev-router-firewall.service \
+  ddev-router-firewall-events.service \
+  ddev-router-firewall-reconcile.timer
+sudo ufw reload
+```
+
+Router Compose changes such as the retained DDEV CA mount require `ddev poweroff`
+then `ddev start --all`; ordinary DDEV project starts only push dynamic routes.
+
+Inspect or restart Zellij Web with:
+
+```bash
+systemctl --user status zellij-web.service
+systemctl --user restart zellij-web.service
+zellij web --status --ip 10.121.16.20 --port 8082
+```
+
+Roll back the clean hostnames with `systemctl --user disable --now
+zellij-web.service`, remove the tracked DDEV route and router override, restow
+`ddev`, reload UFW after restoring its prior rules, then `ddev poweroff && ddev
+start --all`. Direct OpenCode remains available at `http://10.121.16.20:4096`
+for the approved clients and phone while the service is running.
+
+The OpenCode service starts with
 the VM and retries until the guest's ZeroTier address is ready. It binds only to
 `10.121.16.20`; do not change it to `0.0.0.0`, enable mDNS, or expose the port
 through a public proxy.
@@ -280,8 +354,25 @@ npx -y @vectorize-io/hindsight-coding-agents@0.6.1 \
 ```
 
 The installer stages generated runtime files under `~/.hindsight/coding-agents`.
-Its runtime, logs, memory database, and credentials remain machine-local. Quit
-and restart OpenCode after installation, then verify the merged configuration:
+Its runtime, logs, memory database, and credentials remain machine-local.
+
+The `opencode` package also auto-discovers the local OpenCodeReview plugin. Stow
+deploys only `~/.opencodereview/config.example.json`; it never replaces the
+machine-local `config.json`. Create the credential file only when it is absent,
+then replace the placeholder with the 9Router API key:
+
+```bash
+test -e "$HOME/.opencodereview/config.json" || \
+  install -m 0600 \
+    "$HOME/.opencodereview/config.example.json" \
+    "$HOME/.opencodereview/config.json"
+```
+
+The template explicitly excludes the installed `providers.openai` credential
+entry and all live keys. It configures the custom 9Router OpenAI-compatible
+provider with `X-9Router-Token-Saver` set to `off`.
+
+Quit and restart OpenCode after installation, then verify the merged configuration:
 
 ```bash
 opencode debug config

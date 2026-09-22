@@ -8,7 +8,7 @@
 ## Agent modes and delegation
 - Build is the default direct implementation mode. Do not launch agents or model calls through shell commands or APIs to bypass its denied Task tool.
 - Plan owns requirements, tradeoffs, and the final plan. It may delegate bounded repository investigation to Explore; use direct reads for small, targeted questions.
-- Orchestrator is explicitly selected by the user. It coordinates Explore, Implementer, Code-simplifier, and Reviewer; selecting it authorizes delegation, not unapproved scope changes or implementation plans.
+- Orchestrator is explicitly selected by the user. It coordinates Explore, Implementer, and Code-simplifier; selecting it authorizes delegation, not unapproved scope changes or implementation plans.
 - Orchestrator plans and synthesizes directly. It must delegate every non-trivial investigation, implementation, review, or cleanup to the appropriate specialist, while avoiding a ceremonial pipeline.
 - Orchestrator never requests broader shell or edit permissions for itself; it delegates executable work or reports a specific blocker when no permitted specialist can perform it.
 - Keep one active writer per checkout within a workflow. After every non-trivial implementation, wait for checks to finish and run independent review before reporting completion; never review concurrently with the writer. Trivial review skips must be disclosed. This is not a lock across separate OpenCode sessions.
@@ -17,7 +17,24 @@
 - A worker may execute a scope the parent explicitly identifies as approved without requesting approval again. Return ambiguities or material scope changes to the parent.
 - Resume the same implementation worker for corrections when practical. Workers do not delegate further.
 - The primary agent owns completion and checks evidence before reporting success. Read-only agents request executable verification from Build or Implementer rather than bypassing permissions.
-- Reviewer uses OCR delegation mode for Git review scope and applicable rules, then performs evidence-based adversarial review with its own model. OCR does not call a separate LLM in this workflow. Every selected file must be reviewed or explicitly skipped; fixes remain Build/Implementer-owned.
+- Orchestrator delegates official `ocr_review` execution to Implementer without edits, receives results, triages findings, then assigns fixes and checks. OCR alone provides independent review and re-review; fixes remain Build/Implementer-owned.
+- Official OCR reports are lossless: reproduce every native comment verbatim with `content`, `path`, `start_line`, `end_line`, and `existing_code`; reproduce `suggestion_code` verbatim when present, otherwise state `suggestion_code: absent from native result`. Do not summarize, omit, normalize, or infer comment fields. Preserve native status, JSON output, coverage, exclusions, and limits exactly as returned.
+
+## Repository search
+
+Use Lumen semantic search first when the location or symbol is unknown and the
+question is conceptual. Restrict every Lumen search to the active repository;
+never search `/home/jacocanete` as a project root.
+
+Examples:
+- “Where is authentication handled?” → Lumen
+- “What validates checkout totals?” → Lumen
+- “Find the retry and backoff logic.” → Lumen
+- “Where is `validateToken` defined?” → Grep
+- “Find every use of `LUMEN_BACKEND`.” → Grep
+- Known file or confirmed result → read that file directly
+
+Use built-in Grep for exact symbols, strings, regexes and file filters; verify relevant Lumen results with Grep and current file contents before drawing conclusions. Use `glob` only for filename discovery. Use shell `rg` only for match counts or options unsupported by Grep, when shell permissions allow.
 
 ## Hindsight memory
 - Build, Plan, and Orchestrator own explicit Hindsight retrieval, approved initiative capture, and verified corrections. Specialists use the relevant knowledge supplied in their brief and return missing-context questions to the parent.

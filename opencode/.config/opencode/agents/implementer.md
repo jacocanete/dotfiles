@@ -6,6 +6,8 @@ variant: high
 permission:
   task: deny
   hindsight_*: deny
+  ocr_review: allow
+  ocr_health: allow
   bash:
     "*": allow
     "gh *": deny
