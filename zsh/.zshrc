@@ -1,15 +1,6 @@
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
-# Minimal Zellij Web profile: its renderer corrupts ZLE redraw output.
-if [[ "${ZELLIJ_WEB:-}" == 1 ]]; then
-	export PATH=$HOME/.opencode/bin:$HOME/.local/bin:$HOME/bin:$PATH
-	export EDITOR=nvim
-	PROMPT='%n@%m:%~%# '
-	RPROMPT=''
-	return 0
-fi
-
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
@@ -130,12 +121,21 @@ fi
 export PATH="$HOME/.opencode/bin:$PATH"
 
 opencode() {
-  if (( $# == 0 )) && [[ "$PWD" == "$HOME" ]]; then
-    command opencode "$HOME/Projects/general"
+  if [[ "$PWD" == "$HOME" ]]; then
+    (builtin cd -- "$HOME/Projects/general" && command opencode "$@")
     return
   fi
 
   command opencode "$@"
+}
+
+claude() {
+  if [[ "$PWD" == "$HOME" ]]; then
+    (builtin cd -- "$HOME/Projects/general" && command claude "$@")
+    return
+  fi
+
+  command claude "$@"
 }
 
 # Set up fzf key bindings and fuzzy completion when a line editor is active.
@@ -235,3 +235,4 @@ fi
 command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init --cmd cd zsh)"
 
 [[ -r "$HOME/.config/profile.d/android-sdk.sh" ]] && source "$HOME/.config/profile.d/android-sdk.sh"
+

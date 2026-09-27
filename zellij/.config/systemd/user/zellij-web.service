@@ -4,7 +4,7 @@ StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-Environment=ZELLIJ_WEB=1
+Environment=TERM=xterm-256color
 ExecStart=%h/.local/bin/zellij web --start --ip 10.121.16.20 --port 8082 --cert %h/.ddev/traefik/certs/default_cert.crt --key %h/.ddev/traefik/certs/default_key.key
 Restart=always
 RestartSec=5
