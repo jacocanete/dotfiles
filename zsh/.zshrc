@@ -182,31 +182,44 @@ export XDG_CONFIG_HOME="$HOME/.config"
 export WINEESYNC=1
 export WINEFSYNC=1
 
-#Claude said this would set Zellij tab names on cd.
 zellij_tab_name_update() {
-  if [[ -n $ZELLIJ ]]; then
-    tab_name=''
-    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        tab_name+=$(basename "$(git rev-parse --show-toplevel)")/
-        tab_name+=$(git rev-parse --show-prefix)
-        tab_name=${tab_name%/}
-    else
-        tab_name=$PWD
-            if [[ $tab_name == $HOME ]]; then
-         	tab_name="~"
-             else
-         	tab_name=${tab_name##*/}
-             fi
-    fi
-    command nohup zellij action rename-tab $tab_name >/dev/null 2>&1
+  [[ -n $ZELLIJ && -n $ZELLIJ_PANE_ID ]] || return
+
+  local name toplevel prefix
+  if toplevel=$(git rev-parse --show-toplevel 2>/dev/null); then
+    prefix=$(git rev-parse --show-prefix 2>/dev/null)
+    name=${toplevel:t}/$prefix
+    name=${name%/}
+  elif [[ $PWD == $HOME ]]; then
+    name='~'
+  else
+    name=${PWD:t}
   fi
+  [[ -n $name ]] || name=/
+
+  # zellij-tab-state renames this pane's own tab (not the focused one) and
+  # keeps any agent-state glyph. Backgrounded to keep cd instant.
+  # The one-time reset for a new shell must finish, so it is never cancelled.
+  if [[ $1 == new ]]; then
+    zellij-tab-state new "$name" >/dev/null 2>&1 &!
+    return
+  fi
+  # A worker from a rapid earlier cd could land last, so cancel it. Check the
+  # PID is still that worker first: a disowned job's PID can be reused. The
+  # job has its own process group under job control, so this also stops a
+  # rename it already started.
+  local pid=$_zellij_tab_name_pid
+  if [[ -n $pid && -r /proc/$pid/cmdline && $(</proc/$pid/cmdline) == *zellij-tab-state* ]]; then
+    { kill -- -$pid || kill $pid } 2>/dev/null
+  fi
+  zellij-tab-state dir "$name" >/dev/null 2>&1 &!
+  _zellij_tab_name_pid=$!
 }
 
+typeset -U chpwd_functions
 chpwd_functions+=(zellij_tab_name_update)
-
-if [[ -n $ZELLIJ ]]; then
-    zellij_tab_name_update
-fi
+# A new shell may reuse the pane ID of a closed pane's leftover agent state.
+zellij_tab_name_update new
 
 [[ -S /run/docker.sock ]] && export DOCKER_HOST=unix:///run/docker.sock
 [[ -d /usr/local/cuda/bin ]] && export PATH="/usr/local/cuda/bin:$PATH"

@@ -1,0 +1,192 @@
+#!/usr/bin/env zsh
+# Names the calling pane's Zellij tab "<agent glyph> <directory>".
+#   zellij-tab-state dir <name>                      set the tab's directory part (zshrc cd hook)
+#   zellij-tab-state new <name>                      same, for a fresh shell whose pane ID may be reused
+#   zellij-tab-state working|needs|done|error|clear  set this pane's agent state (agent hooks)
+# A tab with several panes shows its most urgent agent state; "working" spins.
+
+# No XDG_RUNTIME_DIR fallback: a shared /tmp path could be pre-created by another user.
+[[ -n $ZELLIJ && -n $ZELLIJ_PANE_ID && -n $ZELLIJ_SESSION_NAME && -d $XDG_RUNTIME_DIR ]] || exit 0
+zmodload zsh/system zsh/zselect zsh/datetime
+
+# Earlier entries win when panes in one tab disagree.
+typeset -a priority=(error needs working done)
+typeset -A glyph=(
+  error $''
+  needs $''
+  done  $''
+)
+# 8-dot braille stays single-width in every font and fills the cell height, so it sits centered.
+typeset -a spinner=(⣾ ⣽ ⣻ ⢿ ⡿ ⣟ ⣯ ⣷)
+# ponytail: each frame is one rename per spinning tab through the Zellij CLI (~20 ms);
+# move to a zjstatus/plugin tab bar if that ever shows up in CPU.
+frame_s=0.12
+
+state_dir=$XDG_RUNTIME_DIR/zellij-tab-state/$ZELLIJ_SESSION_NAME
+mkdir -p -m 700 $state_dir || exit 0
+pane=terminal_$ZELLIJ_PANE_ID
+
+# The animator reads these files unlocked, so never let it see a half-written one.
+publish() {
+  print -r -- $2 >| $1.$$ && mv -f $1.$$ $1
+}
+
+typeset -A tab_of tab_label
+load_tabs() {
+  local row i
+  local -a rows fields
+  tab_of=()
+  tab_label=()
+  rows=(${(f)"$(zellij action list-panes -t 2>/dev/null)"})
+  (( $#rows )) || return 1
+  # Rows are "TAB_ID TAB_POS TAB_NAME... PANE_ID TYPE TITLE...". The tab name is free text,
+  # so anchor on the "terminal_<id> terminal" pair rather than the first pane-like word.
+  for row in $rows; do
+    fields=(${=row})
+    [[ $fields[1] == <-> ]] || continue
+    for (( i = 3; i < $#fields; i++ )); do
+      [[ $fields[i] == terminal_<-> && $fields[i+1] == terminal ]] || continue
+      tab_of[$fields[i]]=$fields[1]
+      tab_label[$fields[1]]=${(j: :)fields[3,i-1]}
+      break
+    done
+  done
+}
+
+tab_state() {
+  local tab=$1 file state
+  local -a stale
+  local -A seen
+  for file in $state_dir/terminal_<->(N); do
+    # Panes that closed without clearing their state (crashed agent) would otherwise pin a glyph.
+    # Only files older than the pane list count as stale: a pane opened since may own a fresh one.
+    if [[ -z $tab_of[${file:t}] ]]; then
+      stale=(${~file}(Nms+10))
+      (( $#stale )) && rm -f $file
+      continue
+    fi
+    [[ $tab_of[${file:t}] == $tab ]] && seen[$(<$file)]=1
+  done
+  for state in $priority; do
+    (( $+seen[$state] )) || continue
+    print -r -- $state
+    return
+  done
+}
+
+render() {
+  local tab=$1 frame=${2:-1} name state lock_fd
+  local -a marks=($spinner $glyph)
+  # Hooks from several panes can render one tab at once; without this an older read can rename last.
+  : >> $state_dir/tab-$tab.lock
+  zsystem flock -f lock_fd $state_dir/tab-$tab.lock 2>/dev/null || return
+  if [[ -f $state_dir/tab-$tab.name ]]; then
+    name=$(<$state_dir/tab-$tab.name)
+  else
+    # A tab whose shell never ran cd since this started keeps its current name.
+    name=$tab_label[$tab]
+    (( $marks[(Ie)${name%% *}] )) && name=${name#* }
+    [[ -n $name ]] || { zsystem flock -u $lock_fd; return }
+    publish $state_dir/tab-$tab.name $name
+  fi
+  state=$(tab_state $tab)
+  case $state in
+    working) name="$spinner[frame] $name" ;;
+    ?*) name="$glyph[$state] $name" ;;
+  esac
+  zellij action rename-tab -t $tab -- $name >/dev/null 2>&1
+  zsystem flock -u $lock_fd
+}
+
+typeset -a working
+integer busy
+load_working() {
+  local tab file
+  working=()
+  busy=0
+  load_tabs || return
+  for tab in ${(u)tab_of}; do
+    [[ $(tab_state $tab) == working ]] && working+=($tab)
+  done
+  # A working pane hidden behind a more urgent one still needs polling: when that pane
+  # closes, nothing else would bring the spinner back.
+  for file in $state_dir/terminal_<->(N); do
+    [[ $(<$file) == working ]] && busy=1
+  done
+  return 0
+}
+
+animate() {
+  # One animator per session. flock needs the file to exist.
+  local lock_fd
+  : >> $state_dir/animator.lock
+  zsystem flock -f lock_fd -t 0 $state_dir/animator.lock 2>/dev/null || return
+  local frame=1 tab wait_cs
+  local -F next=$EPOCHREALTIME
+  local -a previous
+  while load_working; do
+    # A hook may have set a static glyph just before this loop's last spinner frame landed.
+    for tab in ${previous:|working}; do
+      render $tab
+    done
+    if (( ! busy )); then
+      zsystem flock -u $lock_fd
+      # A hook that set "working" while this still held the lock saw its own animator lose
+      # the lock and quit, so check once more after releasing it.
+      load_working && (( busy )) && animate
+      return
+    fi
+    for tab in $working; do
+      render $tab $frame
+    done
+    previous=($working)
+    frame=$(( frame % $#spinner + 1 ))
+    # Sleep only what the Zellij calls left of the frame, so more tabs don't slow the spin.
+    (( next += frame_s, wait_cs = int((next - EPOCHREALTIME) * 100) ))
+    if (( wait_cs > 0 )); then
+      zselect -t $wait_cs
+    else
+      next=$EPOCHREALTIME
+    fi
+  done
+}
+
+case $1 in
+  dir)
+    ;;
+  new)
+    rm -f $state_dir/$pane
+    ;;
+  working|needs|done|error)
+    # Agents report "working" on every tool call; skip the Zellij round trip when nothing changed.
+    # Still make sure an animator runs, in case the last one quit on a failed pane listing.
+    if [[ -f $state_dir/$pane && $(<$state_dir/$pane) == $1 ]]; then
+      [[ $1 == working ]] && setsid -f ${0:A} animate </dev/null >/dev/null 2>&1
+      exit 0
+    fi
+    publish $state_dir/$pane $1
+    ;;
+  clear)
+    [[ -f $state_dir/$pane ]] || exit 0
+    rm -f $state_dir/$pane
+    ;;
+  animate)
+    animate
+    exit 0
+    ;;
+  *)
+    print -u2 "usage: zellij-tab-state dir|new <name> | working|needs|done|error|clear"
+    exit 2
+    ;;
+esac
+
+load_tabs || exit 0
+tab_id=$tab_of[$pane]
+[[ -n $tab_id ]] || exit 0
+
+[[ $1 == (dir|new) ]] && publish $state_dir/tab-$tab_id.name $2
+render $tab_id
+
+# Detached so agent hooks return at once and the animator outlives them.
+[[ -f $state_dir/$pane && $(<$state_dir/$pane) == working ]] && setsid -f ${0:A} animate </dev/null >/dev/null 2>&1
+exit 0
