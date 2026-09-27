@@ -28,8 +28,9 @@ The tools below are defaults, not rituals. Use one when it answers faster or bet
 - Capture an initiative only after the user approves a new capability, and file a correction only for memory you verified is stale.
 
 ### Docs and web: Firecrawl
-- Library, API, and error questions go to the `firecrawl-developer-index` skill first; it returns primary-source passages from docs, READMEs, issues, and merged PRs. Fall back to Context7 when the index has nothing useful or the answer needs one library version's reference.
-- When you need a page's actual content, use the `firecrawl-scrape` skill; `WebFetch` answers through a summarizing model and suits only a quick question about a page. For a site's structure or a local copy, use `firecrawl-map` or `firecrawl-download`.
+- Firecrawl is the first choice for anything outside the repository; the built-in web tools and Context7 are fallbacks for when it errors, runs out of credits, or has nothing useful.
+- Library, API, and error questions → `firecrawl-developer-index` (primary-source passages from docs, READMEs, issues, and merged PRs). Context7 fills in when the answer needs one library version's reference.
+- Web research → `firecrawl-search`; a known page → `firecrawl-scrape`; a site's structure or a local copy → `firecrawl-map` or `firecrawl-download`.
 
 ## Code
 - Match the patterns already in the file or module.
