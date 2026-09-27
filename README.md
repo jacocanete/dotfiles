@@ -29,7 +29,9 @@ package-name/
 | ssh | SSH client configuration and development VM launcher |
 | ddev | Private DNS and HTTPS trust setup for DDEV sites on `home-dev` |
 | localwp | Local WP desktop entry |
-| opencode | OpenCode configuration, skills, and `home-dev` Web service |
+| agents | Shared global `AGENTS.md` for every coding agent, imported by `~/.claude/CLAUDE.md` and loaded by OpenCode through `instructions` |
+| claude | Claude Code skills shared with OpenCode, which also reads `~/.claude/skills` |
+| opencode | OpenCode configuration, OpenCode-only rules, skills, commands, plugins, and `home-dev` Web service |
 | hindsight | Self-hosted coding-agent memory configuration |
 
 ## Usage
