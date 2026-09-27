@@ -50,3 +50,5 @@
 [ghx]
 	account-personalgit = jacocanete
 	account-workgit = jcaneteDI
+[ghx "account-github"]
+	com = jacocanete
