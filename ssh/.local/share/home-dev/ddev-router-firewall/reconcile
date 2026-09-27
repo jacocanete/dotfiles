@@ -55,8 +55,9 @@ reconcile() {
 	router=$(router_ip) || return 1
 	bridge=$(bridge_interface) || return 1
 	[ -n "$bridge" ] || return 1
-	printf 'flush chain ip filter %s\nadd rule ip filter %s ip saddr @%s ip daddr %s iifname "%s" tcp dport 4096 counter accept comment "%s"\nadd rule ip filter %s ip saddr @%s ip daddr %s iifname "%s" tcp dport 8082 counter accept comment "%s"\nflush set ip filter %s\nadd element ip filter %s { %s }\n' \
+	printf 'flush chain ip filter %s\nadd rule ip filter %s ip saddr @%s ip daddr %s iifname "%s" tcp dport 4096 counter accept comment "%s"\nadd rule ip filter %s ip saddr @%s ip daddr %s iifname "%s" tcp dport 8082 counter accept comment "%s"\nadd rule ip filter %s ip saddr @%s ip daddr %s iifname "%s" tcp dport 20128 counter accept comment "%s"\nflush set ip filter %s\nadd element ip filter %s { %s }\n' \
 		"$chain_name" "$chain_name" "$set_name" "$destination" "$bridge" "$comment" \
+		"$chain_name" "$set_name" "$destination" "$bridge" "$comment" \
 		"$chain_name" "$set_name" "$destination" "$bridge" "$comment" \
 		"$set_name" "$set_name" "$router" | "$nft" -f -
 }

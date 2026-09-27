@@ -26,12 +26,29 @@ http:
       rule: Host(`zellij.dev.test`)
       service: zellij-host
       tls: true
+    9router-host-http:
+      entrypoints:
+        - http-80
+      rule: Host(`9router.dev.test`)
+      service: 9router-host
+      middlewares:
+        - 9router-host-https
+    9router-host-https:
+      entrypoints:
+        - http-443
+      rule: Host(`9router.dev.test`)
+      service: 9router-host
+      tls: true
   middlewares:
     opencode-host-https:
       redirectScheme:
         scheme: https
         permanent: true
     zellij-host-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+    9router-host-https:
       redirectScheme:
         scheme: https
         permanent: true
@@ -47,6 +64,11 @@ http:
         serversTransport: zellij-host-transport
         servers:
           - url: https://10.121.16.20:8082
+    9router-host:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: http://10.121.16.20:20128
   serversTransports:
     zellij-host-transport:
       # The Zellij backend presents DDEV's wildcard certificate. Verify it

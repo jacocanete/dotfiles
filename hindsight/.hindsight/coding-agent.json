@@ -4,7 +4,9 @@
   "disabled": false,
   "autoUpdate": false,
   "optInOnly": true,
-  "optInPaths": ["/home/jacocanete/Projects"],
+  "optInPaths": [
+    "/home/jacocanete/Projects"
+  ],
   "resolveWorktrees": true,
   "observationScopes": "shared",
   "gitIngest": "message",
