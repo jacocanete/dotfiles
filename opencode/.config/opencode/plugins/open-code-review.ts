@@ -69,9 +69,11 @@ function pushValue(args: string[], flag: string, value: string | number | undefi
   }
 }
 
-function buildReviewArgs(input: ReviewInput, repo: string): string[] {
-  const hasRange = input.from !== undefined || input.to !== undefined
-  if (hasRange && (!input.from || !input.to)) {
+export function buildReviewArgs(input: ReviewInput, repo: string): string[] {
+  const from = input.from?.trim() ? input.from : undefined
+  const to = input.to?.trim() ? input.to : undefined
+  const hasRange = from !== undefined || to !== undefined
+  if (hasRange && (!from || !to)) {
     throw new Error("Both 'from' and 'to' are required for a branch comparison.")
   }
   if (input.commit && hasRange) {
@@ -96,8 +98,8 @@ function buildReviewArgs(input: ReviewInput, repo: string): string[] {
   args.push("--repo", repo)
 
   pushValue(args, "--commit", input.commit)
-  pushValue(args, "--from", input.from)
-  pushValue(args, "--to", input.to)
+  pushValue(args, "--from", from)
+  pushValue(args, "--to", to)
   pushValue(args, "--resume", input.resume)
   pushValue(args, "--background", input.background)
   pushValue(args, "--background-file", input.backgroundFile)
@@ -332,6 +334,9 @@ export const OpenCodeReviewPlugin: Plugin = async ({ client, worktree }) => {
   }
 
   return {
+    "shell.env": async (_input, output) => {
+      output.env.AGENT_BROWSER_CA_CERT = "/home/jacocanete/.local/share/mkcert/rootCA.pem"
+    },
     config: async (config) => {
       config.command ??= {}
       config.command["ocr-review"] ??= {
