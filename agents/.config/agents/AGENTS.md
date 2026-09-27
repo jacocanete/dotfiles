@@ -27,6 +27,10 @@ The tools below are defaults, not rituals. Use one when it answers faster or bet
 - Memory is history: current instructions set the goal, and current code and runtime evidence decide what exists.
 - Capture an initiative only after the user approves a new capability, and file a correction only for memory you verified is stale.
 
+### Docs and web: Firecrawl
+- Library, API, and error questions go to the `firecrawl-developer-index` skill first; it returns primary-source passages from docs, READMEs, issues, and merged PRs. Fall back to Context7 when the index has nothing useful or the answer needs one library version's reference.
+- When you need a page's actual content, use the `firecrawl-scrape` skill; `WebFetch` answers through a summarizing model and suits only a quick question about a page. For a site's structure or a local copy, use `firecrawl-map` or `firecrawl-download`.
+
 ## Code
 - Match the patterns already in the file or module.
 - Use small, focused functions with early returns.
@@ -35,6 +39,10 @@ The tools below are defaults, not rituals. Use one when it answers faster or bet
 ## Safety and verification
 - Ask before committing to Git or adding a dependency.
 - Before reporting completion, run the typecheck, test, and lint commands the project defines.
+
+## Commits
+- Commits are authored by the user alone: no `Co-Authored-By` trailer or other agent attribution, even when a tool suggests one.
+- The subject line carries the change. Add a body only when it earns its place: two or three lines on *why* (the constraint, decision, or gotcha), never a recap of the diff.
 
 ## home-dev
 - This VM is `home-dev`, reached at `10.121.16.20` over ZTNet. Bind browser-facing dev servers to `0.0.0.0` or `10.121.16.20` and report URLs as `http://10.121.16.20:<port>`.
