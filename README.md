@@ -274,10 +274,10 @@ the VM and retries until the guest's ZeroTier address is ready. It binds only to
 `10.121.16.20`; do not change it to `0.0.0.0`, enable mDNS, or expose the port
 through a public proxy.
 
-This endpoint intentionally uses ZTNet and UFW instead of HTTP Basic Auth. An
-approved client can use OpenCode to read files and run commands as the guest
-user. The phone firewall rule is limited to TCP port 4096, while the desktop and
-ProBook retain broader development access.
+This endpoint uses ZTNet, source-scoped UFW rules, and OpenCode V2's built-in
+authentication. An approved client can use OpenCode to read files and run
+commands as the guest user. The phone also reaches Traefik HTTPS and VM DNS;
+the desktop and ProBook retain broader development access.
 
 Deploy and enable the tracked service inside the guest:
 
@@ -289,9 +289,9 @@ systemctl --user enable --now opencode-web.service
 ```
 
 `--no-folding` keeps systemd's machine-local enablement link outside the
-dotfiles repository. The service adds the OpenCode and FNM paths, optionally
-loads the guest-only `~/.secrets` file for MCP credentials, and explicitly
-leaves OpenCode server authentication disabled.
+dotfiles repository. The service adds the FNM path, optionally loads the
+guest-only `~/.secrets` file for MCP credentials, and keeps OpenCode V2's
+built-in Web authentication enabled.
 
 Inspect or restart it with:
 

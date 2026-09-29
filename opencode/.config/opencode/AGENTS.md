@@ -3,4 +3,5 @@
 - Both work directly; subagent delegation is disabled in this setup, so investigate yourself.
 - Put repeatable workflows in skills rather than new agents or permission profiles.
 - Run OCR through `/ocr-review` after writing is finished; Build owns fixes.
-- OpenCode Web runs as a systemd user service at `http://10.121.16.20:4096`; the phone reaches only this port.
+- Before coding, call Serena's `initial_instructions` tool. Use Serena's symbol tools for code navigation and edits where they fit; the MCP starts with the current project activated.
+- OpenCode Web runs as a systemd user service at `http://10.121.16.20:4096`. The phone can also reach `https://opencode.dev.test` over ZeroTier after trusting the VM's CA.

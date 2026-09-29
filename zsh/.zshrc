@@ -110,15 +110,15 @@ plugins=(
 alias sail='sh $([ -f sail ] && echo sail || echo vendor/bin/sail)'
 alias xampp='xampp-manager-launcher.sh'
 
+# opencode (fnm's active version must take precedence)
+export PATH="$HOME/.local/share/fnm/aliases/default/bin:$PATH"
+
 # FNM Setup
 FNM_PATH="$HOME/.local/share/fnm"
 if [[ -x "$FNM_PATH/fnm" ]]; then
   export PATH="$FNM_PATH:$PATH"
   eval "$(fnm env --use-on-cd)"
 fi
-
-# opencode
-export PATH="$HOME/.opencode/bin:$PATH"
 
 opencode() {
   if [[ "$PWD" == "$HOME" ]]; then
@@ -248,4 +248,3 @@ fi
 command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init --cmd cd zsh)"
 
 [[ -r "$HOME/.config/profile.d/android-sdk.sh" ]] && source "$HOME/.config/profile.d/android-sdk.sh"
-

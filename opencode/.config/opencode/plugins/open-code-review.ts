@@ -3,7 +3,6 @@
 
 import { spawn } from "node:child_process"
 import { join } from "node:path"
-import { type Plugin, tool } from "@opencode-ai/plugin"
 import type { Plugin as PluginV2 } from "@opencode/plugin"
 
 interface ReviewInput {
@@ -289,147 +288,8 @@ function formatReviewResult(result: RunResult, preview: boolean): string {
   }
 }
 
-const optionalString = (description: string) =>
-  tool.schema.string().optional().describe(description)
-
-const optionalPositiveInt = (description: string) =>
-  tool.schema.number().int().positive().optional().describe(description)
-
-const reviewArgs = {
-  commit: optionalString("Review one commit against its parent."),
-  from: optionalString("Base ref for a branch/range comparison. Must be paired with 'to'."),
-  to: optionalString("Target ref for a branch/range comparison. Must be paired with 'from'."),
-  resume: optionalString("Resume a previous OCR review session by ID."),
-  background: optionalString("Business or requirement context that the implementation should satisfy."),
-  backgroundFile: optionalString(
-    "Path to a Markdown file holding the review background, for context too long to pass inline. " +
-      "A relative path resolves against the repository root; an absolute path is used as given. " +
-      "Cannot be combined with 'background'.",
-  ),
-  exclude: optionalString("Comma-separated gitignore-style exclusion patterns."),
-  model: optionalString("Override the model configured in OpenCodeReview."),
-  concurrency: optionalPositiveInt("Maximum concurrent file reviews."),
-  timeoutMinutes: optionalPositiveInt("Per-file OCR timeout in minutes."),
-  overallTimeoutMinutes: optionalPositiveInt(
-    "Optional wall-clock timeout for the complete OCR process in minutes.",
-  ),
-  maxTools: optionalPositiveInt("Maximum tool-call rounds per subtask; OCR enforces a minimum of 50."),
-  maxGitProcesses: optionalPositiveInt("Maximum concurrent Git subprocesses."),
-  preview: tool.schema.boolean().optional().describe(
-    "List the files that would be reviewed without calling an LLM.",
-  ),
-}
-
-export const OpenCodeReviewPlugin: Plugin = async ({ client, worktree }) => {
-  try {
-    await client.app.log({
-      body: {
-        service: "open-code-review",
-        level: "info",
-        message: "OpenCodeReview tools registered",
-      },
-    })
-  } catch {
-    // Best-effort telemetry; a failed log call must not block tool registration.
-  }
-
-  return {
-    "shell.env": async (_input, output) => {
-      output.env.AGENT_BROWSER_CA_CERT = "/home/jacocanete/.local/share/mkcert/rootCA.pem"
-    },
-    config: async (config) => {
-      config.command ??= {}
-      config.command["ocr-review"] ??= {
-        description: "Review code changes with OpenCodeReview",
-        template:
-          "Use the ocr_review tool to review the requested target. " +
-          "Treat the following text as review intent, target details, and business context: $ARGUMENTS. " +
-          "If no target is specified, review the current workspace changes. " +
-          "Report findings by severity with exact file and line references.",
-      }
-      config.command["ocr-health"] ??= {
-        description: "Check OpenCodeReview and its LLM connection",
-        template:
-          "Use the ocr_health tool and explain any configuration problem concisely.",
-      }
-    },
-    tool: {
-      ocr_review: tool({
-        description:
-          "Run OpenCodeReview on workspace changes, one commit, or a ref range. " +
-          "Returns structured line-level findings as JSON. Use preview=true to inspect scope without LLM usage.",
-        args: reviewArgs,
-        async execute(args, context) {
-          const input = args as ReviewInput
-          const cwd = context.worktree || context.directory || worktree
-          const defaultOverallMs = 30 * 60 * 1000
-          const options: RunOptions = {
-            cwd,
-            signal: context.abort,
-            timeoutMs: input.overallTimeoutMinutes !== undefined
-              ? input.overallTimeoutMinutes * 60 * 1000
-              : defaultOverallMs,
-          }
-          const result = await runOcr(buildReviewArgs(input, cwd), options)
-          return formatReviewResult(result, input.preview === true)
-        },
-      }),
-      ocr_health: tool({
-        description:
-          "Check the installed OpenCodeReview version and verify its configured LLM connection.",
-        args: {},
-        async execute(_args, context) {
-          const cwd = context.worktree || context.directory || worktree
-          const [version, llm] = await Promise.allSettled([
-            runOcr(["version"], {
-              cwd,
-              timeoutMs: 30_000,
-              signal: context.abort,
-            }),
-            runOcr(["llm", "test"], {
-              cwd,
-              timeoutMs: 60_000,
-              signal: context.abort,
-            }),
-          ])
-          const rejected = [version, llm].find(
-            (result): result is PromiseRejectedResult => result.status === "rejected",
-          )
-          if (context.abort?.aborted && rejected) {
-            throw rejected.reason
-          }
-
-          const parts: string[] = []
-          if (version.status === "fulfilled") {
-            parts.push(version.value.stdout)
-          } else {
-            parts.push(`Version check failed: ${version.reason?.message ?? "unknown error"}`)
-          }
-          if (llm.status === "fulfilled") {
-            parts.push(llm.value.stdout, llm.value.stderr)
-          } else {
-            parts.push(`LLM connection check failed: ${llm.reason?.message ?? "unknown error"}`)
-          }
-          return parts.filter(Boolean).join("\n")
-        },
-      }),
-    },
-  }
-}
-
-// ---------------------------------------------------------------------------
-// OpenCode 2.x entrypoint (https://opencode.ai/v2/docs/build/plugins).
-// The default export at the bottom of this file serves both versions: V2
-// reads `id` + `setup`, V1 reads `server`. All OCR logic above is shared.
-//
-// The V2 API is imported as types only (`import type`), and the definition
-// below is a plain object literal: `Plugin.define` is an identity function,
-// so V1 never needs the `@opencode/plugin` package at runtime.
-//
-// V2 limitations (no equivalent in the V2 tool API): tool execution has no
-// abort signal, so cancellation relies on the overall timeout, and the
-// per-session working directory is resolved from the session location.
-// ---------------------------------------------------------------------------
+// Tool execution uses the session directory; timeouts also stop reviews if
+// the client disconnects without cancelling the tool.
 
 const OCR_REVIEW_DESCRIPTION =
   "Run OpenCodeReview on workspace changes, one commit, or a ref range. " +
@@ -483,6 +343,9 @@ async function resolveSessionCwd(ctx: PluginV2.Context, sessionID: string): Prom
 }
 
 async function setupV2(ctx: PluginV2.Context): Promise<void> {
+  await ctx.shell.hook("create.before", (event) => {
+    event.env.AGENT_BROWSER_CA_CERT = "/home/jacocanete/.local/share/mkcert/rootCA.pem"
+  })
   await ctx.tool.transform((editor) => {
     editor.add({
       name: "ocr_review",
@@ -493,6 +356,7 @@ async function setupV2(ctx: PluginV2.Context): Promise<void> {
         const cwd = await resolveSessionCwd(ctx, toolCtx.sessionID)
         const result = await runOcr(buildReviewArgs(review, cwd), {
           cwd,
+          signal: toolCtx.signal,
           timeoutMs: review.overallTimeoutMinutes !== undefined
             ? review.overallTimeoutMinutes * 60 * 1000
             : 30 * 60 * 1000,
@@ -507,9 +371,10 @@ async function setupV2(ctx: PluginV2.Context): Promise<void> {
       execute: async (_input, toolCtx) => {
         const cwd = await resolveSessionCwd(ctx, toolCtx.sessionID)
         const [version, llm] = await Promise.allSettled([
-          runOcr(["version"], { cwd, timeoutMs: 30_000 }),
-          runOcr(["llm", "test"], { cwd, timeoutMs: 60_000 }),
+          runOcr(["version"], { cwd, timeoutMs: 30_000, signal: toolCtx.signal }),
+          runOcr(["llm", "test"], { cwd, timeoutMs: 60_000, signal: toolCtx.signal }),
         ])
+        toolCtx.signal?.throwIfAborted()
         const parts: string[] = []
         if (version.status === "fulfilled") {
           parts.push(version.value.stdout)
@@ -567,5 +432,4 @@ async function setupV2(ctx: PluginV2.Context): Promise<void> {
 export default {
   id: "open-code-review",
   setup: setupV2,
-  server: OpenCodeReviewPlugin,
 }
