@@ -151,7 +151,11 @@ fi
 export EDITOR=nvim
 
 if [[ -z "$ZELLIJ" && -z "$NO_ZELLIJ" ]] && command -v zellij >/dev/null 2>&1; then
-  if [[ "$HOST" == "home-dev" && -n "$SSH_TTY" ]]; then
+  # The phone connects over mosh, which leaves SSH_TTY unset but keeps
+  # SSH_CONNECTION; its narrow screen needs a borderless, font-safe layout.
+  if [[ "$HOST" == "home-dev" && "${SSH_CONNECTION%% *}" == "10.121.16.132" ]]; then
+    exec zellij attach --create phone options --default-layout compact --pane-frames false --simplified-ui true
+  elif [[ "$HOST" == "home-dev" && -n "$SSH_TTY" ]]; then
     exec zellij attach --create dev
   else
     eval "$(zellij setup --generate-auto-start zsh)"
