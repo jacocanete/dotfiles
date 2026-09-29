@@ -1,61 +1,61 @@
 ---
 name: ddev-wordpress
-description: Local WordPress work on home-dev. Use for creating, running, repairing, testing, or migrating a WP site (including Studio and WP Migrate), even when DDEV is not named; also for wp-admin, WP-CLI, plugin/theme development, Composer, SQL imports, snapshots, and dev.test site access.
+description: Local WordPress sites on home-dev, run under DDEV even when DDEV is not named. Use for creating, repairing, or testing a WP site; plugin or theme development; WP-CLI or wp-admin work; SQL imports and snapshots; Studio or WP Migrate migrations; and `*.dev.test` URLs.
 ---
 
 # DDEV WordPress
 
-Use DDEV as the default local WordPress runtime on `home-dev`. Treat it as a
-normal WordPress installation with MariaDB, admin access, WP-CLI, Composer,
-uploads, cron, and filesystem writes. Keep the site runtime separate from
-theme and plugin Git repositories.
+DDEV is the local WordPress runtime on `home-dev`: a full install with
+MariaDB, WP-CLI, and writable uploads. The site runtime lives apart from the
+theme and plugin Git repositories it mounts.
 
-## Work from evidence
+## Steps
 
-1. Inspect the site and worktree, DDEV/Docker state, ports, disk, database
-   format, and linked theme/plugin paths before choosing a workflow. Use the
-   checks relevant to the task: `ddev version`, `ddev list`, `ddev describe`,
-   `docker version`, `ss -lnt`, and `git status --short`. For a running site,
-   check WordPress version, `home` and `siteurl`, theme/plugin status, and
-   database health with `ddev wp`.
-2. Protect the source: preserve unrelated worktree changes and external
-   theme/plugin repositories. Take a named DDEV snapshot before an import,
-   URL replacement, upgrade, or other consequential database change. Migrate
-   a copy; retain the source until the copy passes the checks below.
-3. Follow the branch that matches the task:
-   - New/existing site, plugin install, external mount, or live theme workflow:
+1. **Inspect.** Use `ddev list`, `ddev describe`, `docker version`,
+   `ss -lnt`, `git status --short`, and `ddev wp` as the task needs. Done
+   when you know the site path, whether DDEV runs it, its primary URL, its
+   `home` and `siteurl`, and which external repositories it mounts.
+2. **Snapshot.** Before an import, URL replacement, upgrade, theme switch, or
+   other consequential database change, run `ddev snapshot --name=<label>`.
+   Migrate a *copy*; the source stays untouched until the copy passes the
+   checks in [Done when](#done-when).
+3. **Branch.**
+   - New or existing site, plugins, external mounts, or live theme work:
      [sites-and-themes.md](references/sites-and-themes.md).
-   - SQL import/export, Studio migration, URL replacement, or WP Migrate:
+   - SQL import or export, URL replacement, Studio, or WP Migrate:
      [migrations.md](references/migrations.md).
-   - DNS, TLS, ports, remote browser/client access, ZeroTier, ZTNet, UFW, or
-     proxy behavior: load the `home-dev-networking` skill before changing it.
-4. Verify the site and affected workflow, then report the URL, site path,
-   daily commands, checks performed, and any client DNS/certificate setup
-   still required.
+   - DNS, TLS, ports, remote access, ZeroTier, UFW, or proxy behavior: load
+     the `home-dev-networking` skill, which owns those changes and their
+     approvals.
+4. **Verify and report.** Pass every applicable check in
+   [Done when](#done-when), then report the URL, site path, daily commands,
+   checks run, and any client DNS or certificate setup still required.
 
-Use `ddev wp`, `ddev exec`, `ddev composer`, and `ddev mysql` for commands that
-need the container's runtime; host `wp`, `php`, `composer`, `mysql`, or Node
-may operate on a different environment. Theme asset tooling is the exception:
-run it from the host theme repository as described in the theme reference.
+Run PHP-side commands through `ddev wp`, `ddev exec`, `ddev composer`, and
+`ddev mysql`: host `wp`, `php`, `composer`, and `mysql` hit a different
+runtime. Theme asset tooling is the exception and runs on the host (see the
+theme reference).
 
-## Approval and data boundaries
+## Boundaries
 
-- Confirm production source, destination, included data, and overwrite
-  direction before any WP Migrate push or pull.
-- Ask before changing ZeroTier, ZTNet, DNS, UFW, SSH routing, public exposure,
-  or standard router ports; `home-dev-networking` owns that workflow.
-- Keep database dumps, uploads, paid plugin ZIPs, license keys, credentials,
-  generated certificates, and machine-local paths out of Git unless the repo
-  intentionally manages them.
+- Before any WP Migrate push or pull, confirm source, destination, included
+  data, and overwrite direction with the user.
+- Database dumps, uploads, premium plugin ZIPs, license keys, credentials,
+  certificates, and machine-local paths stay out of Git unless the repository
+  deliberately manages them.
 
 ## Done when
 
-For the affected site, check `ddev describe`, `ddev wp core is-installed`,
-`ddev wp db check`, theme/plugin status, and the canonical
-`https://<project>.dev.test` URL as applicable. Verify the front end in a
-real browser and `/wp-admin/` after authentication. Test plugin search,
-upload, activation, and deletion when relevant; check WP Migrate's admin
-screen, live mounts, and the project's own build/lint/typecheck/tests when
-those workflows are involved. Confirm source
-sites and unrelated Git changes are intact. After a successful migration,
-take a final named database snapshot.
+Every check that applies to the affected site passes:
+
+- `ddev describe`, `ddev wp core is-installed`, and `ddev wp db check`.
+- Theme and plugin status match the intent.
+- `https://<project>.dev.test` renders in a real browser, and `/wp-admin/`
+  loads after login.
+- Plugin search, upload, activation, and deletion work, when plugins were
+  touched.
+- The WP Migrate admin screen works in a browser; activation alone proves
+  nothing.
+- Mounted repositories pass their own build, lint, typecheck, and tests.
+- Source sites and unrelated Git changes are intact.
+- After a migration, a final named snapshot exists.
