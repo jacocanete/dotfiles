@@ -96,22 +96,26 @@ need to change on the home network.
 |--------|---------|---------|
 | Desktop | `10.121.16.18` | Approved development client |
 | ProBook | `10.121.16.127` | Approved future dotfiles client |
-| Phone | `10.121.16.132` | OpenCode Web client only |
+| Phone | `10.121.16.132` | SSH and mosh, OpenCode Web, and HTTPS `dev.test` client |
 | `home-dev` | `10.121.16.20` | Stable SSH and browser endpoint |
 | `home-dev` | `192.168.122.10` | Libvirt recovery path through `home-server` |
 | `home-server` | `10.121.16.22` | Remote VM control path |
 | `home-server` | `192.168.1.5` | Home LAN VM control path |
 
 The guest firewall allows inbound traffic from the desktop and ProBook over
-ZTNet. The phone can reach only OpenCode Web on TCP port 4096. It allows only
-SSH from the libvirt host and denies other inbound and routed traffic. The
-tracked `DOCKER-USER` rules apply the desktop and ProBook source policy to
-Docker-published ports, which otherwise bypass UFW's normal input rules.
+ZTNet. The phone can reach VM SSH on TCP 22, mosh on UDP 60000-61000, VM DNS
+on TCP/UDP 53, Traefik HTTPS on TCP 443, and OpenCode Web directly on TCP 4096.
+It allows only SSH from the libvirt
+host and denies other inbound and routed traffic. The tracked `DOCKER-USER`
+rules restrict the phone to the original host HTTPS destination, because
+Docker-published ports bypass UFW's normal input rules.
 
 `home-server-dev` connects directly to the VM over ZTNet.
 `home-server-dev-recovery` reaches the private libvirt address through the host.
 The VM's ED25519 host-key fingerprint is
-`SHA256:CkqO/QT55NR8mecAjkSAcOEwJE3qXmWUTqyym7oBda0`.
+`SHA256:CkqO/QT55NR8mecAjkSAcOEwJE3qXmWUTqyym7oBda0`; clients such as Termius
+may show the ECDSA key instead, whose fingerprint is
+`SHA256:wnSYSQ3shyqAsxEmsSFzjVPwPUbaMgx6DP02kh80qII`.
 The guest keeps its own regular `~/.ssh/config` for its dedicated GitHub keys;
 do not replace it with the workstation SSH configuration.
 
@@ -135,13 +139,17 @@ After pulling the dotfiles repository in the guest, configure UFW before
 running any browser-facing service:
 
 ```bash
-sudo apt install ufw
+sudo apt install ufw mosh
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw default deny routed
 sudo ufw allow in on ztazsqtda4 from 10.121.16.18 comment 'desktop via ZTNet'
 sudo ufw allow in on ztazsqtda4 from 10.121.16.127 comment 'ProBook via ZTNet'
 sudo ufw allow in on ztazsqtda4 from 10.121.16.132 to 10.121.16.20 port 4096 proto tcp comment 'phone to OpenCode web'
+sudo ufw allow in on ztazsqtda4 from 10.121.16.132 to 10.121.16.20 port 53 proto udp comment 'phone dev.test DNS'
+sudo ufw allow in on ztazsqtda4 from 10.121.16.132 to 10.121.16.20 port 53 proto tcp comment 'phone dev.test DNS'
+sudo ufw allow in on ztazsqtda4 from 10.121.16.132 to 10.121.16.20 port 22 proto tcp comment 'phone SSH'
+sudo ufw allow in on ztazsqtda4 from 10.121.16.132 to 10.121.16.20 port 60000:61000 proto udp comment 'phone mosh'
 sudo ufw allow in on enp1s0 from 192.168.122.1 to any port 22 proto tcp comment 'libvirt host recovery SSH'
 sudo ufw route allow in on ztazsqtda4 from 10.121.16.18 comment 'desktop to containers'
 sudo ufw route allow in on ztazsqtda4 from 10.121.16.127 comment 'ProBook to containers'
@@ -157,6 +165,13 @@ sudo zerotier-cli peers
 sudo ufw status verbose
 sudo iptables -S DOCKER-USER
 ```
+
+The phone connects with Termius to `jacocanete@10.121.16.20` using key
+authentication, with Mosh enabled for the host. Mosh keeps the terminal alive
+across network changes and sleep. `.zshrc` attaches phone logins to a
+`phone` Zellij session with the compact layout, no pane frames, and the
+simplified UI, so work also survives a lost Mosh session. The guest accepts
+only public-key SSH logins.
 
 Use `ssh home-server-dev-recovery` if ZTNet or UFW configuration needs repair.
 As an emergency rollback from that recovery session, run `sudo ufw disable`.
@@ -194,10 +209,11 @@ DNS remains unchanged because only `~dev.test` is routed through `home-dev`.
 
 ### Zellij and OpenCode Web on `home-dev`
 
-Open `https://zellij.dev.test` or `https://opencode.dev.test` from the desktop
-or ProBook while connected to `homelab-network`. These names require the running
-DDEV Traefik router and the DDEV CA installed by `setup-ddev-client`. Traefik
-terminates trusted client TLS and proxies WebSockets to the two host services.
+Open `https://zellij.dev.test` or `https://opencode.dev.test` from an approved
+ZeroTier client. These names require the running DDEV Traefik router and its
+local CA trusted on the client. Fedora installs it with `setup-ddev-client`;
+Android needs its CA installed separately. Traefik terminates trusted client
+TLS and proxies WebSockets to the two host services.
 
 Zellij Web is token-authenticated. Create a token only from a private terminal;
 Zellij prints it once and retains only its native token database entry:
@@ -227,7 +243,8 @@ A root-owned `ddev-router-firewall` reconciler inspects the live
 when its name, DDEV platform label, image family, and one-network shape match.
 Its nftables set is empty on Docker errors, router absence, or event-stream loss.
 The matching UFW rule allows only that address on the DDEV bridge to host TCP
-`4096` and `8082`; no other Docker container, client, or phone gains access.
+`4096` and `8082`. The phone's separate `DOCKER-USER` exception permits only
+the original host HTTPS port to reach the Docker-published Traefik router.
 
 Install the root artifacts after stowing `ssh`, then enable their service and
 backstop timer:

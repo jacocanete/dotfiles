@@ -19,6 +19,8 @@
 # Keep Docker-published ports under the same ZTNet source policy as UFW.
 -A DOCKER-USER -i ztazsqtda4 -s 10.121.16.18 -j RETURN
 -A DOCKER-USER -i ztazsqtda4 -s 10.121.16.127 -j RETURN
+# Match the original host destination because Docker changes the destination to its router container.
+-A DOCKER-USER -i ztazsqtda4 -s 10.121.16.132 -p tcp -m conntrack --ctorigdst 10.121.16.20 --ctorigdstport 443 -j RETURN
 -A DOCKER-USER -i ztazsqtda4 -j DROP
 
 # ddev-router-firewall installs its nftables set-matching rules through UFW's

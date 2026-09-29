@@ -1,73 +1,59 @@
 # Services and client access
 
-Read this for exposing a development server, routing HTTPS, browser/API
-behavior, Expo, or layered connectivity diagnosis.
-
 ## Direct service access
 
-Before starting a browser-facing service, identify its HTTP, WebSocket, API,
-callback, and live-reload ports; inspect `ss -lnt` and resolve conflicts by
-identifying the owner. Bind to `10.121.16.20` when supported, otherwise
-`0.0.0.0` behind the existing firewall. Constrain accepted hostnames when the
-framework supports it. Keep backend-only services on loopback behind a
-frontend proxy. Verify from both VM and intended client.
-
-Wildcard DNS resolves the hostname but does not remove the port:
-
-```text
-http://portfolio.dev.test:4321
-http://api.portfolio.dev.test:8090
-```
-
-Examples of direct bindings:
+Bind a browser-facing service to `10.121.16.20` when it supports that,
+otherwise to `0.0.0.0` behind the existing firewall; a localhost-only
+listener cannot serve remote clients. Backend-only services stay on loopback
+behind a frontend proxy. Where the framework supports it, set allowed hosts
+to the intended `*.dev.test` name (Astro and Vite both do).
 
 ```bash
 npm run dev -- --host 0.0.0.0 --port 4321
 pocketbase serve --http=0.0.0.0:8090
 ```
 
-Set Astro/Vite allowed hosts to the intended `*.dev.test` hostname rather
-than accepting arbitrary hosts. Report the actual reachable URL.
+Wildcard DNS resolves the name but keeps the port:
+
+```text
+http://portfolio.dev.test:4321
+http://api.portfolio.dev.test:8090
+```
 
 ## Standard ports and HTTPS
 
-DDEV's Traefik router owns ports 80 and 443 on `home-dev`. DDEV projects with
-`project_tld: dev.test` get URLs like
-`https://wp-theme-star-engineer.dev.test`. A separate service on 4321 or 8090
-still needs its explicit port. If clean HTTPS is required, propose routing
-through an appropriate DDEV project, a reviewed route on existing Traefik,
-or a deliberate redesign of shared proxy ownership. Preserve DDEV on 80/443;
-do not put another proxy on those ports.
+DDEV's Traefik router owns ports 80 and 443 on `home-dev`, and it keeps them.
+DDEV projects with `project_tld: dev.test` get URLs like
+`https://wp-theme-star-engineer.dev.test`; a separate service on 4321 or 8090
+still needs its explicit port. When clean HTTPS is required, propose one of:
+routing through an appropriate DDEV project, a reviewed route on the existing
+Traefik, or a deliberate redesign of shared proxy ownership.
 
-Private HTTPS uses the DDEV local CA. Use `setup-ddev-client` for Fedora trust,
-then verify without TLS bypass; `curl --insecure` is only a diagnostic to
-separate trust failures from reachability.
+Private HTTPS uses the DDEV local CA; Fedora clients get it from
+`setup-ddev-client` (see [private-network-and-dns.md](private-network-and-dns.md)).
+`curl --insecure` serves only to separate a trust failure from a reachability
+failure.
 
 ## Browser and API traffic
 
 Browser-side `localhost` is the client device, not the VM. Prefer relative
-requests such as `/api` and a frontend proxy to a VM-local backend. Use a
-named `api.<project>.dev.test` endpoint when clients must reach the API
-directly, and configure CORS for intentional cross-origin requests. Check
-WebSockets and server-sent events through proxies, especially live reload,
-Metro, and PocketBase realtime subscriptions.
+requests such as `/api`, with a frontend proxy to the VM-local backend. When
+clients must reach the API directly, give it a named `api.<project>.dev.test`
+endpoint and configure CORS for the intended origins. Test WebSockets and
+server-sent events through every proxy, especially live reload, Metro, and
+PocketBase realtime subscriptions.
 
 ## Expo on a physical phone
 
-Metro commonly uses TCP 8081. The phone cannot currently query private DNS or
-reach Metro; its UFW access is limited to OpenCode Web on TCP 4096. Prefer
-`npx expo start --tunnel` for physical-device testing. Direct ZeroTier access
-would need separately approved source-restricted DNS and Metro policy; account
-for other Expo ports, WebSockets, Android cleartext HTTP, and private CA trust.
+The phone can query private DNS and reach Traefik HTTPS, but Metro (usually
+TCP 8081) remains blocked. Test on the device with `npx expo start --tunnel`.
+Direct ZeroTier access to Metro needs a separately approved, source-restricted
+policy covering the other Expo ports, WebSockets, and Android cleartext HTTP.
 
-## Diagnose by layer
+## Checks per layer
 
-Choose the smallest relevant checks from `ip -brief address`,
+Pick the smallest set for the failing layer: `ip -brief address`,
 `sudo zerotier-cli info`, `sudo zerotier-cli listnetworks`,
 `sudo zerotier-cli peers`, `resolvectl status`, `ss -lnt`,
 `sudo ss -lntup`, `sudo ufw status verbose`, `docker ps`, and
 `curl -I https://<project>.dev.test`.
-
-Interpret failure in order: ZeroTier membership/address → UFW source policy →
-ZTNet DNS policy → client split DNS → listener/bind → hostname routing and
-allowed hosts → TLS trust → application, proxy headers, WebSockets, or CORS.
