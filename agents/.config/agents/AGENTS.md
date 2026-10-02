@@ -19,6 +19,7 @@ The tools below are defaults, not rituals. Use one when it answers faster or bet
   - Before a large review, confirm the file list with `--preview`.
 - Pass the approved goal as `--background` when the review should check the change against its requirements.
 - Treat findings as candidates: drop low-confidence ones (likely false positives, nitpicks, missing context), check the rest against the code, and fix the confirmed ones. Re-review only after significant fixes, scoped to the fix commits.
+- Large increment or finished feature, in Claude Code: once review fixes are committed, run the `ocr-simplify` skill over the work plus its fix commits, commit, then review only the simplify commits unless they are trivial. Simplify comes after review because bug fixes change behaviour and would undo earlier cleanups, while simplify must keep behaviour.
 - Report every kept finding verbatim, exactly as OCR returned it: `content`, `path`, `start_line`, `end_line`, `existing_code`, and `suggestion_code` when present. Follow each with your verdict (fixed, or dismissed with a one-line reason). Close with the scope, coverage, and a count of dropped findings.
 
 ### Memory: Hindsight
