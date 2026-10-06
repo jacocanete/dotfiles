@@ -4,6 +4,7 @@
 - When something goes sideways, stop and re-plan. After a failed tool call, read the error and retry only with a concrete change; otherwise report the blocker.
 - Change only what the task needs; flag unrelated issues in your report.
 - Ask when a requirement is ambiguous.
+- When a step needs the user's hands (a command you cannot run, a dashboard, a key), hand it over as a `wizard` script, not a list of commands.
 
 ## Tools earn their call
 The tools below are defaults, not rituals. Use one when it answers faster or better than the alternative; when you skip a default, say so in one line with the reason.
