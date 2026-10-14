@@ -46,11 +46,6 @@
         "command": ["npx", "-y", "@upstash/context7-mcp"],
         "disabled": false
       },
-      "serena": {
-        "type": "local",
-        "command": ["serena", "start-mcp-server", "--context", "ide", "--project-from-cwd"],
-        "disabled": false
-      },
       "headroom": {
         "type": "local",
         "command": ["/home/jacocanete/.local/bin/headroom", "mcp", "serve"],
