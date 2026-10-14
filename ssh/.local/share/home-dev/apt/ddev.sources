@@ -1,0 +1,5 @@
+Types: deb
+URIs: https://packages.ddev.com/public/deb/ubuntu
+Suites: stable
+Components: main
+Signed-By: /etc/apt/keyrings/ddev.asc
