@@ -1,0 +1,9 @@
+[Unit]
+Description=Back up home-dev state to restic
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/home-dev-backup
+Nice=10
+IOSchedulingClass=idle

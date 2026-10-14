@@ -1,0 +1,26 @@
+http:
+  routers:
+    filebrowser-quantum-http:
+      entrypoints:
+        - http-80
+      rule: Host(`files.dev.test`)
+      service: filebrowser-quantum
+      middlewares:
+        - filebrowser-quantum-https
+    filebrowser-quantum-https:
+      entrypoints:
+        - http-443
+      rule: Host(`files.dev.test`)
+      service: filebrowser-quantum
+      tls: true
+  middlewares:
+    filebrowser-quantum-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+  services:
+    filebrowser-quantum:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: http://filebrowser-quantum:8080

@@ -1,0 +1,36 @@
+# Regenerable caches and toolchains: bootstrap.sh reinstalls these.
+node_modules
+.cache
+.npm
+.next
+*.log
+/home/*/.gradle
+/home/*/.yarn
+/home/*/.bun
+/home/*/.oh-my-zsh
+/home/*/snap
+/home/*/Android
+/home/*/.local/opt
+/home/*/.local/bin
+/home/*/.local/lib
+/home/*/.local/share/fnm
+/home/*/.local/share/claude
+/home/*/.local/share/pnpm
+/home/*/.local/share/uv
+/home/*/.local/share/nvim
+/home/*/.claude/shell-snapshots
+/home/*/.claude/debug
+/home/*/.config/google-chrome-for-testing
+/home/*/.zcompdump*
+
+# Private SSH keys are never backed up; a rebuild generates new ones.
+# Only .pub, config, known_hosts and authorized_keys stay in ~/.ssh.
+/home/*/.ssh/*
+!/home/*/.ssh/*.pub
+!/home/*/.ssh/config
+!/home/*/.ssh/known_hosts
+!/home/*/.ssh/authorized_keys
+
+# Projects live in git and DDEV sites are re-pulled from their hosts after a rebuild.
+/home/*/Projects
+/home/*/Sites

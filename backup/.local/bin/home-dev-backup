@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Back up the home-dev state the dotfiles cannot regenerate to restic.
+# Credentials live in ~/.config/restic/env, which the rebuild wizard pulls from Bitwarden.
+set -euo pipefail
+
+set -a
+. "$HOME/.config/restic/env"
+set +a
+export PATH=$HOME/.local/bin:$PATH
+
+# Only service state that git cannot recreate; project and site databases are rebuilt from their repos.
+KEEP_VOLUMES='^(hindsight_hindsight-data|filebrowser-quantum-state)$'
+
+rc=0
+# All of $HOME minus the excludes file, so new auth stores are covered without edits here.
+restic backup --tag files --exclude-caches --exclude-file "$HOME/.config/restic/excludes" "$HOME" || rc=1
+
+paused=()
+unpause() { ((${#paused[@]})) && docker unpause "${paused[@]}" >/dev/null; paused=(); }
+# A stopped unit or a failed upload must never leave site containers frozen.
+trap unpause EXIT
+
+volumes=$(docker volume ls -q) || { echo "cannot list docker volumes" >&2; volumes=; rc=1; }
+for vol in $(grep -E "$KEEP_VOLUMES" <<<"$volumes"); do
+  # Pausing freezes writers, so the tar is a crash-consistent point-in-time copy.
+  # ponytail: crash-consistent DB copies, switch to pg_dump/ddev export-db if a restore ever fails.
+  for c in $(docker ps -q --filter "volume=$vol"); do
+    docker pause "$c" >/dev/null && paused+=("$c")
+  done
+  restic backup --tag volume --stdin-filename "$vol.tar" --stdin-from-command -- \
+    docker run --rm -v "$vol:/v:ro" alpine:3.20 tar -C /v -cf - . || rc=1
+  unpause
+done
+
+restic forget --prune --group-by host,tags,paths \
+  --keep-daily 7 --keep-weekly 4 --keep-monthly 6 || rc=1
+exit $rc

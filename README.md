@@ -33,6 +33,50 @@ package-name/
 | claude | Claude Code skills shared with OpenCode, which also reads `~/.claude/skills` |
 | opencode | OpenCode configuration, OpenCode-only rules, skills, commands, plugins, and `home-dev` Web service |
 | hindsight | Self-hosted coding-agent memory configuration |
+| services | `home-dev` user units (9Router, Headroom, diagnostics) and the File Browser stack |
+| backup | Nightly restic backup of `home-dev` state to Backblaze B2 |
+
+## Rebuild `home-dev` from scratch
+
+The dotfiles hold the recipe; restic on Backblaze B2 holds the state the recipe
+cannot regenerate: all of `$HOME` minus the caches and toolchains listed in
+`backup/.config/restic/excludes` (app state and auth, secrets files, and the
+DDEV mkcert CA), plus the Hindsight and File Browser Docker volumes.
+`~/Projects`, `~/Sites`, and site databases are not backed up: push
+repositories to their remotes, and re-clone or re-pull sites after a rebuild.
+The Traefik routes for 9router, Hindsight, File Browser and the web UIs are
+tracked in the `ddev` package. The only off-box secret is the Bitwarden secure note
+`home-dev restic`, which holds the repository URL, B2 key, and restic password.
+
+SSH keys, the VM's host keys, and the ZeroTier identity are never backed up. A
+rebuild generates new ones; the wizard registers them.
+
+On a fresh Ubuntu 24.04 VM, as user `jacocanete` with sudo:
+
+```bash
+sudo apt-get update && sudo apt-get install -y git jq stow curl
+git clone https://github.com/jacocanete/dotfiles ~/dotfiles
+~/dotfiles/bootstrap.sh      # toolchain at pinned versions, then stow
+# log out and back in (docker group, zsh)
+~/dotfiles/rebuild-wizard.sh # ZeroTier, UFW, SSH keys, Bitwarden, restore
+```
+
+`bootstrap.sh` installs the third-party apt repositories tracked under
+`ssh/.local/share/home-dev/apt/`, the packages in `packages-home-dev.txt`, and
+the release binaries pinned at the top of the script. `restore.sh`, which the
+wizard calls, restores the latest snapshots and starts the services.
+
+Backups run nightly from `home-dev-backup.timer`. Set them up once with
+`~/dotfiles/setup-backup-wizard.sh`, then check them with:
+
+```bash
+systemctl --user list-timers home-dev-backup
+journalctl --user -u home-dev-backup
+set -a; . ~/.config/restic/env; set +a; restic snapshots --latest 1
+```
+
+Volumes are copied while their containers are paused, which gives
+crash-consistent database copies.
 
 ## Usage
 
