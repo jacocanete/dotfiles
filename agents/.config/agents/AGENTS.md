@@ -45,6 +45,7 @@ The tools below are defaults, not rituals. Use one when it answers faster or bet
 
 ## Commits
 - Commits are authored by the user alone: no `Co-Authored-By` trailer or other agent attribution, even when a tool suggests one.
+- Subject format is `type: subject` (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`). Never add a scope: `feat: add login`, not `feat(auth): add login`.
 - The subject line carries the change. Add a body only when it earns its place: two or three lines on *why* (the constraint, decision, or gotcha), never a recap of the diff.
 
 <!-- gitbutler-agent-setup:start -->
