@@ -1,0 +1,16 @@
+[Unit]
+Description=9Router on home-dev
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=%h
+Environment=PATH=%h/.local/share/fnm/node-versions/v24.0.1/installation/bin:%h/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+EnvironmentFile=%h/.config/9router.env
+ExecStart=%h/.local/share/fnm/node-versions/v24.0.1/installation/bin/node %h/.local/share/fnm/node-versions/v24.0.1/installation/lib/node_modules/9router/cli.js --host 0.0.0.0 --port 20128 --no-browser --skip-update
+Restart=always
+RestartSec=5
+UMask=0077
+
+[Install]
+WantedBy=default.target

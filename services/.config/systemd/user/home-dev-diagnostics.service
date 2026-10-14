@@ -1,0 +1,15 @@
+[Unit]
+Description=Capture lightweight diagnostics for home-dev hangs
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/home-dev-diagnostics
+Restart=always
+RestartSec=5
+Nice=10
+IOSchedulingClass=idle
+SyslogIdentifier=home-dev-diagnostics
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,48 @@
+#!/usr/bin/bash
+
+set -u
+
+while true; do
+  timestamp=$(date --iso-8601=seconds)
+  load=$(< /proc/loadavg)
+  memory_pressure=$(tr '\n' ';' < /proc/pressure/memory)
+  io_pressure=$(tr '\n' ';' < /proc/pressure/io)
+  rx_bytes=$(< /sys/class/net/enp1s0/statistics/rx_bytes)
+  rx_dropped=$(< /sys/class/net/enp1s0/statistics/rx_dropped)
+  rx_errors=$(< /sys/class/net/enp1s0/statistics/rx_errors)
+  tx_bytes=$(< /sys/class/net/enp1s0/statistics/tx_bytes)
+  tx_dropped=$(< /sys/class/net/enp1s0/statistics/tx_dropped)
+  tx_errors=$(< /sys/class/net/enp1s0/statistics/tx_errors)
+
+  if ping -n -c 1 -W 2 192.168.122.1 >/dev/null 2>&1; then
+    gateway=ok
+  else
+    gateway=failed
+  fi
+
+  if getent ahostsv4 api.openai.com >/dev/null 2>&1; then
+    dns=ok
+  else
+    dns=failed
+  fi
+
+  http_code=$(curl --silent --output /dev/null --write-out '%{http_code}' \
+    --connect-timeout 2 --max-time 5 https://api.openai.com/v1/models 2>/dev/null) || true
+  [[ $http_code != 000 && -n $http_code ]] || http_code=failed
+
+  adb_processes=$(pgrep -c -x adb 2>/dev/null) || adb_processes=0
+  adb_connections=0
+  while IFS= read -r socket; do
+    case $socket in
+      *:5037*|*192.168.1.*) ((adb_connections += 1)) ;;
+    esac
+  done < <(ss -Htan 2>/dev/null)
+
+  printf 'sample time=%s gateway=%s dns=%s openai_http=%s adb_processes=%s adb_connections=%s load="%s" memory_pressure="%s" io_pressure="%s" enp1s0_rx_bytes=%s enp1s0_rx_dropped=%s enp1s0_rx_errors=%s enp1s0_tx_bytes=%s enp1s0_tx_dropped=%s enp1s0_tx_errors=%s\n' \
+    "$timestamp" "$gateway" "$dns" "$http_code" "$adb_processes" "$adb_connections" "$load" \
+    "$memory_pressure" "$io_pressure" "$rx_bytes" "$rx_dropped" "$rx_errors" \
+    "$tx_bytes" "$tx_dropped" "$tx_errors"
+  ps -C opencode -o pid=,ppid=,nlwp=,%cpu=,%mem=,rss=,stat=,etimes= 2>/dev/null || true
+
+  sleep 15
+done
