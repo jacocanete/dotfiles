@@ -270,7 +270,7 @@ restic cat config >/dev/null 2>&1 || restic init
 systemctl --user daemon-reload
 systemctl --user enable --now home-dev-backup.timer
 systemctl --user start --no-block home-dev-backup.service
-say "First backup is running in the background (about 30 GB, so it takes a while)."
+say "First backup is running in the background (a few GB, so it takes a while)."
 note "Follow it:  journalctl --user -fu home-dev-backup"
 note "Next runs: nightly at 03:30 (systemctl --user list-timers home-dev-backup)"
 pause

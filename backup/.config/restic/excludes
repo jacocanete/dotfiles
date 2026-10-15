@@ -34,3 +34,12 @@ node_modules
 # Projects live in git and DDEV sites are re-pulled from their hosts after a rebuild.
 /home/*/Projects
 /home/*/Sites
+
+# Agent session history and scratch output. Claude's auto-memory stays.
+/home/*/.local/share/opencode/opencode.db*
+/home/*/.claude/jobs
+/home/*/.claude/projects/*/*
+!/home/*/.claude/projects/*/memory
+/home/*/.opencodereview/sessions
+/home/*/wp-env
+/home/*/Uploads
