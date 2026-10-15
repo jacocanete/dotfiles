@@ -28,7 +28,7 @@ NPM_GLOBALS=(
   @hubspot/cli@8.15.0
   @openai/codex@0.154.0
   @opencode/cli@2.0.22
-  @bitwarden/cli@2026.9.1
+  @bitwarden/cli@2026.6.0 # matches Vaultwarden's API; newer CLIs call endpoints it lacks
   agent-browser@0.36.0
   firecrawl-cli@1.24.6
   tree-sitter-cli@0.27.0

@@ -233,7 +233,7 @@ warn "Lose this password and every backup is unreadable. The next stage stores i
 pause
 
 stage "Bitwarden: store the restic credentials"
-command -v bw >/dev/null || "$NPM" install -g @bitwarden/cli@2026.9.1 >/dev/null
+command -v bw >/dev/null || "$NPM" install -g @bitwarden/cli@2026.6.0 >/dev/null
 say "Log in to Bitwarden in this terminal (email, master password, 2FA)."
 # Self-hosted vault; bw only lets the server change while logged out.
 [[ $(bw config server) == "$BW_SERVER" ]] || { bw logout >/dev/null 2>&1 || true; bw config server "$BW_SERVER" >/dev/null; }
