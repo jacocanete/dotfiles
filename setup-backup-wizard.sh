@@ -187,6 +187,7 @@ finish() {
 
 TOTAL_STAGES=5
 ENV_FILE="$HOME/.config/restic/env"
+BW_SERVER=https://vault.jacocanete.dev
 NPM="$HOME/.local/share/fnm/node-versions/v24.0.1/installation/bin/npm"
 export PATH="$HOME/.local/bin:$HOME/.local/share/fnm/node-versions/v24.0.1/installation/bin:$PATH"
 mkdir -p "$(dirname "$ENV_FILE")"
@@ -234,6 +235,8 @@ pause
 stage "Bitwarden: store the restic credentials"
 command -v bw >/dev/null || "$NPM" install -g @bitwarden/cli@2026.9.1 >/dev/null
 say "Log in to Bitwarden in this terminal (email, master password, 2FA)."
+# Self-hosted vault; bw only lets the server change while logged out.
+[[ $(bw config server) == "$BW_SERVER" ]] || { bw logout >/dev/null 2>&1 || true; bw config server "$BW_SERVER" >/dev/null; }
 if bw login --check >/dev/null 2>&1; then BW_SESSION=$(bw unlock --raw); else BW_SESSION=$(bw login --raw); fi
 export BW_SESSION
 bw sync >/dev/null

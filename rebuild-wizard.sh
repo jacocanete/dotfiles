@@ -189,6 +189,7 @@ TOTAL_STAGES=9
 DOT=$(cd "$(dirname "$0")" && pwd)
 ZT_NETWORK=b6ad79b0c8703cd4
 ENV_FILE="$HOME/.config/restic/env"
+BW_SERVER=https://vault.jacocanete.dev
 export PATH="$HOME/.local/bin:$HOME/.local/share/fnm/node-versions/v24.0.1/installation/bin:$PATH"
 
 banner "Rebuild home-dev from dotfiles + backup"
@@ -286,6 +287,8 @@ pause
 
 stage "Bitwarden: fetch the restic credentials"
 say "Log in to Bitwarden in this terminal (email, master password, 2FA)."
+# Self-hosted vault; bw only lets the server change while logged out.
+[[ $(bw config server) == "$BW_SERVER" ]] || { bw logout >/dev/null 2>&1 || true; bw config server "$BW_SERVER" >/dev/null; }
 if bw login --check >/dev/null 2>&1; then BW_SESSION=$(bw unlock --raw); else BW_SESSION=$(bw login --raw); fi
 export BW_SESSION
 bw sync >/dev/null
