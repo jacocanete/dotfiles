@@ -22,13 +22,14 @@ trap unpause EXIT
 
 volumes=$(docker volume ls -q) || { echo "cannot list docker volumes" >&2; volumes=; rc=1; }
 for vol in $(grep -E "$KEEP_VOLUMES" <<<"$volumes"); do
+  # ./tmp is File Browser's rebuildable search index (1.4 GB); Hindsight has none.
   # Pausing freezes writers, so the tar is a crash-consistent point-in-time copy.
   # ponytail: crash-consistent DB copies, switch to pg_dump/ddev export-db if a restore ever fails.
   for c in $(docker ps -q --filter "volume=$vol"); do
     docker pause "$c" >/dev/null && paused+=("$c")
   done
   restic backup --tag volume --stdin-filename "$vol.tar" --stdin-from-command -- \
-    docker run --rm -v "$vol:/v:ro" alpine:3.20 tar -C /v -cf - . || rc=1
+    docker run --rm -v "$vol:/v:ro" alpine:3.20 tar -C /v --exclude=./tmp -cf - . || rc=1
   unpause
 done
 
