@@ -23,13 +23,14 @@ RESTIC=0.18.1
 CLAUDE=2.1.300
 HEADROOM=0.39.1
 NPM_GLOBALS=(
-  9router@0.5.95
+  9router@0.5.104
   @alibaba-group/open-code-review@1.13.0
   @hubspot/cli@8.15.0
   @openai/codex@0.154.0
   @opencode/cli@2.0.22
   @bitwarden/cli@2026.6.0 # matches Vaultwarden's API; newer CLIs call endpoints it lacks
   agent-browser@0.36.0
+  cf@1.0.0-beta.18
   firecrawl-cli@1.24.6
   tree-sitter-cli@0.27.0
   vscode-langservers-extracted@4.10.0

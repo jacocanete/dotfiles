@@ -29,6 +29,10 @@ The tools below are defaults, not rituals. Use one when it answers faster or bet
 - Memory is history: current instructions set the goal, and current code and runtime evidence decide what exists.
 - Capture an initiative only after the user approves a new capability, and file a correction only for memory you verified is stale.
 
+### Cloudflare: `cf`
+- When interacting with Cloudflare, use the `cf` CLI unless the project has a Wrangler configuration file.
+- Find commands with `cf cli search "<task>"`, check the request with `cf schema <command>`, and preview writes with `--dry-run` before running them.
+
 ### Docs and web: Firecrawl
 - Firecrawl is the first choice for anything outside the repository; the built-in web tools and Context7 are fallbacks for when it errors, runs out of credits, or has nothing useful.
 - Library, API, and error questions → `firecrawl-developer-index` (primary-source passages from docs, READMEs, issues, and merged PRs). Context7 fills in when the answer needs one library version's reference.
