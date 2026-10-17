@@ -30,7 +30,7 @@ package-name/
 | ddev | Private DNS and HTTPS trust setup for DDEV sites on `home-dev` |
 | localwp | Local WP desktop entry |
 | agents | Shared global `AGENTS.md` for every coding agent, imported by `~/.claude/CLAUDE.md` and loaded by OpenCode through `instructions` |
-| claude | Claude Code skills shared with OpenCode, which also reads `~/.claude/skills`, and the Coolify MCP headers helper (credentials come from Bitwarden) |
+| claude | Claude Code skills shared with OpenCode, which also reads `~/.claude/skills`, and the Coolify MCP headers helper |
 | opencode | OpenCode configuration, OpenCode-only rules, skills, commands, plugins, and `home-dev` Web service |
 | hindsight | Self-hosted coding-agent memory configuration |
 | services | `home-dev` user units (9Router, Headroom, diagnostics) and the File Browser stack |
@@ -45,8 +45,11 @@ DDEV mkcert CA), plus the Hindsight and File Browser Docker volumes.
 `~/Projects`, `~/Sites`, and site databases are not backed up: push
 repositories to their remotes, and re-clone or re-pull sites after a rebuild.
 The Traefik routes for 9router, Hindsight, File Browser and the web UIs are
-tracked in the `ddev` package. The only off-box secret is the Bitwarden secure note
-`home-dev restic`, which holds the repository URL, B2 key, and restic password.
+tracked in the `ddev` package. Hand-made secrets also live off-box as Bitwarden
+secure notes, one per file, listed in `secrets.list`: `home-dev restic` (repository
+URL, B2 key, restic password) plus the Coolify MCP, Hindsight, Figma, OCR, 9Router
+and Firecrawl keys. Run `~/dotfiles/save-secrets-wizard.sh` after adding or rotating
+one; the rebuild wizard writes them back before the restore.
 
 SSH keys, the VM's host keys, and the ZeroTier identity are never backed up. A
 rebuild generates new ones; the wizard registers them.

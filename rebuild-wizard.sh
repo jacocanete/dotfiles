@@ -285,20 +285,26 @@ note "$(cat ~/.ssh/dogtoothtactical-wpengine-ed25519.pub)"
 note "New signers were appended to ~/dotfiles/git/.config/git/allowed_signers: commit that."
 pause
 
-stage "Bitwarden: fetch the restic credentials"
+stage "Bitwarden: fetch credentials"
 say "Log in to Bitwarden in this terminal (email, master password, 2FA)."
 # Self-hosted vault; bw only lets the server change while logged out.
 [[ $(bw config server) == "$BW_SERVER" ]] || { bw logout >/dev/null 2>&1 || true; bw config server "$BW_SERVER" >/dev/null; }
 if bw login --check >/dev/null 2>&1; then BW_SESSION=$(bw unlock --raw); else BW_SESSION=$(bw login --raw); fi
 export BW_SESSION
 bw sync >/dev/null
-mkdir -p "$(dirname "$ENV_FILE")"
-(umask 077; bw get notes "home-dev restic" > "$ENV_FILE")
-mkdir -p ~/.config/coolify-mcp
-(umask 077; bw get notes "coolify-mcp" > ~/.config/coolify-mcp/credentials)
+while IFS=$'\t' read -r note path <&3; do
+  [[ -z $note || $note == \#* ]] && continue
+  mkdir -p "$(dirname "$HOME/$path")"
+  if (umask 077; bw get notes "$note" > "$HOME/$path.bw") 2>/dev/null; then
+    mv "$HOME/$path.bw" "$HOME/$path"
+    say "${GREEN}✓${RESET} ~/$path"
+  else
+    rm -f "$HOME/$path.bw"
+    warn "no '$note' note in Bitwarden; ~/$path comes back from the backup instead"
+  fi
+done 3< "$DOT/secrets.list"
 bw lock >/dev/null
-grep -q '^RESTIC_REPOSITORY=' "$ENV_FILE" || { warn "the note lacks RESTIC_REPOSITORY; fix it in Bitwarden and re-run"; exit 1; }
-say "Wrote $ENV_FILE and ~/.config/coolify-mcp/credentials."
+grep -q '^RESTIC_REPOSITORY=' "$ENV_FILE" || { warn "the 'home-dev restic' note lacks RESTIC_REPOSITORY; fix it in Bitwarden and re-run"; exit 1; }
 claude mcp get coolify >/dev/null 2>&1 || claude mcp add-json coolify -s user \
   "{\"type\":\"http\",\"url\":\"https://coolify.jacocanete.dev/mcp\",\"headersHelper\":\"$HOME/.config/coolify-mcp/headers.sh\"}"
 pause
