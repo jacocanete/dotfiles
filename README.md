@@ -30,7 +30,7 @@ package-name/
 | ddev | Private DNS and HTTPS trust setup for DDEV sites on `home-dev` |
 | localwp | Local WP desktop entry |
 | agents | Shared global `AGENTS.md` for every coding agent, imported by `~/.claude/CLAUDE.md` and loaded by OpenCode through `instructions` |
-| claude | Claude Code skills shared with OpenCode, which also reads `~/.claude/skills` |
+| claude | Claude Code skills shared with OpenCode, which also reads `~/.claude/skills`, and the Coolify MCP headers helper (credentials come from Bitwarden) |
 | opencode | OpenCode configuration, OpenCode-only rules, skills, commands, plugins, and `home-dev` Web service |
 | hindsight | Self-hosted coding-agent memory configuration |
 | services | `home-dev` user units (9Router, Headroom, diagnostics) and the File Browser stack |

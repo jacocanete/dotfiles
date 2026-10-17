@@ -294,9 +294,13 @@ export BW_SESSION
 bw sync >/dev/null
 mkdir -p "$(dirname "$ENV_FILE")"
 (umask 077; bw get notes "home-dev restic" > "$ENV_FILE")
+mkdir -p ~/.config/coolify-mcp
+(umask 077; bw get notes "coolify-mcp" > ~/.config/coolify-mcp/credentials)
 bw lock >/dev/null
 grep -q '^RESTIC_REPOSITORY=' "$ENV_FILE" || { warn "the note lacks RESTIC_REPOSITORY; fix it in Bitwarden and re-run"; exit 1; }
-say "Wrote $ENV_FILE."
+say "Wrote $ENV_FILE and ~/.config/coolify-mcp/credentials."
+claude mcp get coolify >/dev/null 2>&1 || claude mcp add-json coolify -s user \
+  "{\"type\":\"http\",\"url\":\"https://coolify.jacocanete.dev/mcp\",\"headersHelper\":\"$HOME/.config/coolify-mcp/headers.sh\"}"
 pause
 
 stage "Restore state from backup"
